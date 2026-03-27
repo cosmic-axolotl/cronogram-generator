@@ -476,6 +476,55 @@ body.desktop-mode{min-width:1100px;overflow-x:auto;}
   .controls-grid{grid-template-columns:1fr;}
   .aval-row{grid-template-columns:auto 1fr;}
 }
+
+  /* ── TOAST CONFIRMAÇÃO DE DISCIPLINA ── */
+  #disc-toast {
+    display: none;
+    margin-top: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    border: 0.5px solid;
+    animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    backdrop-filter: blur(8px);
+  }
+  @keyframes toastIn { from { opacity:0; transform:translateY(-6px) scale(0.97); } to { opacity:1; transform:none; } }
+  #disc-toast.found {
+    background: rgba(106,171,240,0.10);
+    border-color: rgba(106,171,240,0.35);
+    color: var(--text);
+  }
+  #disc-toast.not-found {
+    background: rgba(255,85,85,0.08);
+    border-color: rgba(255,85,85,0.30);
+    color: #ff7070;
+  }
+  .toast-header { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .toast-code { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--accent); }
+  .toast-nome { font-family:'Urbanist',sans-serif; font-size:15px; font-weight:700; color:var(--star); }
+  .toast-meta { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-bottom:6px; }
+  .toast-prereq { font-size:12px; color:var(--muted); }
+  .toast-prereq strong { color:var(--text); }
+  .toast-btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .toast-confirm { background:var(--accent); color:#05080f; border:none; border-radius:6px; padding:7px 16px; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.2s; }
+  .toast-confirm:hover { opacity:0.85; }
+  .toast-cancel  { background:none; color:var(--muted); border:0.5px solid var(--border2); border-radius:6px; padding:7px 14px; font-family:'Exo 2',sans-serif; font-size:13px; cursor:pointer; transition:all 0.2s; }
+  .toast-cancel:hover { border-color:var(--accent); color:var(--text); }
+
+  /* ── DOW: máx 3 selecionados ── */
+  .dow-btn.max-reached:not(.selected) {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .dow-limit-warn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--orange);
+    margin-top: 8px;
+    display: none;
+  }
+  .dow-limit-warn.show { display: block; }
+
 </style>
 </head>
 <body>
@@ -604,7 +653,9 @@ body.desktop-mode{min-width:1100px;overflow-x:auto;}
     <div class="controls-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
       <div class="field">
         <label>Código</label>
-        <input type="text" id="disc-codigo" value="OVL514" placeholder="ex: FIS2301">
+        <input type="text" id="disc-codigo" value="OVL514" placeholder="ex: OVL514"
+               oninput="onCodigoInput(this.value)"
+               onblur="checkCodigo(this.value)">
       </div>
       <div class="field" style="grid-column:span 2">
         <label>Nome da Disciplina</label>
@@ -630,8 +681,12 @@ body.desktop-mode{min-width:1100px;overflow-x:auto;}
         <button class="dow-btn selected" data-dow="5" onclick="toggleDow(this)">Sex</button>
         <button class="dow-btn" data-dow="6">Sáb</button>
       </div>
+      <p class="dow-limit-warn" id="dow-limit-warn">⚠ Máximo de 3 dias de aula por semana</p>
     </div>
   </div>
+
+  <!-- TOAST DE CONFIRMAÇÃO -->
+  <div id="disc-toast"></div>
 </div>
 
 <!-- AVALIAÇÕES -->
@@ -766,6 +821,11 @@ body.desktop-mode{min-width:1100px;overflow-x:auto;}
 <script>
 'use strict';
 
+
+// ── CATÁLOGO OVL — Observatório do Valongo / UFRJ ────────────────────────────
+// Fonte: Catálogo Curso de Graduação em Astronomia, Ano 2015
+var CATALOGO_OVL = {"OVL504": {"nome": "Astrobiologia", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Formação Estelar. Formação de Planetas. Materiais precursores da vida no Contexto Cosmológico. Zona de Habitabilidade Estelar e Galáctica. Origem da Vida. A célula viva e seu funcionamento. Diversidade biológica. Metabolismo. Reprodução e código genético. Extremófilos e os limites da vida. Evolução geológica. Tipos de rocha e solos. Tectônica de placas e deriva continental. Formação dos oceanos. Planetologia comparada. Atmosferas planetárias. Exoplanetas. Equação de Drake. SETI.", "objetivo": "Apresentar as ideias correntes acerca da evolução da vida no contexto cósmico."}, "OVL362": {"nome": "Astroestatística", "creditos": 4, "horas": 75, "prereq": "Introdução à Estatística, Métodos Computacionais em Astronomia, Métodos Física Teórica I", "ementa": "Testes de hipótese paramétricos e não-paramétricos. Teste da Qui-quadrada e de Kolmogorov-Smirnov. ANOVA. Regressão linear. Método de máxima verossimilhança. Séries temporais astronômicas. Análise e decomposição de misturas multivariáveis. PCA. Estimação de densidades. Métodos de re-amostragem (bootstrapping). Função de correlação. Wavelets. Análise Bayesiana. Introdução a redes neurais.", "objetivo": "Apresentar elementos da teoria de probabilidade e inferência estatística a fim de capacitá-los a resolver problemas de Astronomia Estatística."}, "OVL505": {"nome": "Astrofísica Extragaláctica", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral, Termodinâmica e Física Estatística", "ementa": "Classificação de galáxias. Componentes fotométricos. Gás e poeira em galáxias. Populações estelares. Dinâmica de galáxias. Formação estelar. Galáxias starburst. AGNs e Quasares. Aglomerados de galáxias. Efeitos ambientais em galáxias. Meio intergaláctico. DLAs.", "objetivo": "Apresentar os conhecimentos básicos sobre astrofísica extragaláctica."}, "OVL506": {"nome": "Astrofísica Galáctica", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral, Termodinâmica e Física Estatística", "ementa": "Meio interestelar. Regiões H I e H II. Nuvens moleculares. Regiões de formação estelar. Função de massa inicial. Extinção interestelar. A vizinhança solar. Populações estelares. Aglomerados abertos e globulares. Dinâmica galáctica. Rotação galáctica. Discos fino e espesso. Halo. Bojo. Matéria escura. Formação monolítica e hierárquica da Galáxia. Evolução quimiodinâmica da Galáxia. Nuvens de Magalhães e galáxias satélites.", "objetivo": "Apresentar o contexto teórico e observacional da Estrutura da Galáxia e do meio interestelar."}, "OVL241": {"nome": "Astrofísica Geral", "creditos": 5, "horas": 90, "prereq": "Cálculo I, Física III", "ementa": "Radiação e fundamentos de transporte radiativo. Leis de Kirchoff. Corpo negro. Átomo de Bohr. Excitação e Ionização. Leis dos gases. Propriedades nucleares. Classificação estelar. Sistemas fotométricos. Magnitudes e distâncias estelares. Propriedades fundamentais de estrelas. Correção bolométrica. Movimentos próprios e velocidades radiais. Diagrama HR. Diagrama cor-cor e cor-magnitude. Avermelhamento interestelar. Estrutura estelar. Evolução estelar. Estrelas variáveis e múltiplas. Estrelas peculiares. Protoestrelas. Anãs brancas, estrelas de nêutrons e buracos negros. Aglomerados estelares. Nebulosas. Meio interestelar. A Galáxia. Galáxias e cosmologia.", "objetivo": "Apresentar uma visão abrangente dos principais domínios da Astrofísica dos pontos de vista teórico e observacional."}, "OVL507": {"nome": "Astrofísica de Plasmas", "creditos": 4, "horas": 60, "prereq": "Eletromagnetismo I, Mecânica Quântica I", "ementa": "Equações da Magnetohidrodinâmica. Soluções estáticas e estacionárias das equações da MHD. Ondas magnetohidrodinâmicas. Ondas de Alfvén. Ondas magnetossônicas. Ondas eletromagnéticas em plasmas. Eletrodinâmica. Potenciais de Lienard-Wiechert. Mecanismos de emissão. Efeitos eletrodinâmicos em plasma. Plasmas Astrofísicos. Estrelas magnéticas. Galáxias ativas e Quasares. Choques. Jatos.", "objetivo": "Apresentar os fundamentos da teoria de plasmas para a compreensão dos objetos astronômicos e dos fenômenos em plasmas astrofísicos."}, "OVL363": {"nome": "Astronomia Contemporânea", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral", "ementa": "Estrutura e Evolução Estelar. Meio Interestelar. Estrutura Galáctica. Galáxias normais. Galáxias ativas. Estruturas em grandes escalas. Formação e Evolução das galáxias. Radiação Cosmológica de Fundo. Cosmologia. Buracos negros. Instrumentação Astronômica e Astronomia Espacial.", "objetivo": "Aprofundar o conhecimento dos alunos sobre temas da Astronomia Contemporânea de maneira mais abrangente do que o abordado na disciplina de Astrofísica Geral."}, "OVL121": {"nome": "Astronomia Esférica", "creditos": 5, "horas": 90, "prereq": "Não tem", "ementa": "Das origens da Astronomia. Sistemas de referência. Sistemas de coordenadas astronômicas. Técnicas matemáticas da Astronomia Esférica. Rotação e translação da Terra. Movimentos geocêntricos: configurações planetárias; fases; eclipses; marés; ocultações. Tempo: calendários; tempo rotacional; tempo gravitacional; tempo atômico. Movimentos dos sistemas de coordenadas: precessão; nutação; movimentos dos pólos. Aberração. Paralaxe. Refração astronômica. Movimento próprio e redução ao dia.", "objetivo": "Apresentar os fundamentos da Astronomia de Posição, Sistemas de Referência e Tempo, as relações entre os Sistemas de Referência, os movimentos da Terra e as consequências nas posições observadas dos astros."}, "OVL502": {"nome": "Astronomia, Informação e Comunicação", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Atividades práticas e reflexivas usando a Astronomia como elemento motivador. Possibilidades de atuação multidisciplinar no ensino médio a partir de projetos que incorporem o uso de novas tecnologias de informação e comunicação (TICS). Medida de objetos no céu. Publicação de materiais e discussão de assuntos pela Web. Modelagem 2D e 3D de fenômenos. Processamento de imagens. Uso de jogos e simulações.", "objetivo": "Propor a utilização das novas Tecnologias de Informação e Comunicação como ferramentas de apoio didático."}, "OVL508": {"nome": "Astronomia de Posição", "creditos": 4, "horas": 60, "prereq": "Astronomia Esférica, Prática Observacional Astronômica", "ementa": "Sistemas de referência. Referencial inercial e tempo uniforme. Catálogos astrométricos. Determinação de posições astrométricas. Redução ao dia. Astrometria CCD. A Astrometria no contexto da Astronomia e da Astrofísica.", "objetivo": "Apresentar tópicos avançados sobre Sistemas de Referência, Tempo e da teoria dos Instrumentos Clássicos de Astrometria."}, "OVL516": {"nome": "Astroquímica", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Noções de química no contexto astronômico. Estrutura e espectros de moléculas simples. Meio interestelar: gás e poeira. Nuvens moleculares densas e difusas. Formação e destruição de moléculas no gás e na superfície de grãos. Abundâncias. Regiões de Fotodissociação. Reações químicas: íon-molécula, recombinação dissociativa, associação radiativa. Química em regiões de formação estelar. Química em nebulosas planetárias. Química em cometas.", "objetivo": "Apresentar os fundamentos da astroquímica e da formação e destruição de espécies moleculares em ambientes astronômicos."}, "OVL509": {"nome": "Atmosferas Estelares", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral, Termodinâmica e Física Estatística", "ementa": "Transporte radiativo e convectivo. Coeficientes de absorção da linha e contínuo. Modelos clássicos de atmosferas. Formação do contínuo. Formação de linhas. Mecanismos de alargamento de linhas. Abundâncias químicas.", "objetivo": "Apresentar a teoria fundamental da interpretação dos espectros estelares, dos processos de opacidade estelar e da atmosfera."}, "OVL510": {"nome": "Cosmologia", "creditos": 4, "horas": 60, "prereq": "Mecânica Quântica I, Termodinâmica e Física Estatística", "ementa": "Relatividade restrita e geral. Topologia do Universo. Equação de Friedman. Expansão do Universo. Escalas de distância. Radiação e matéria: era da radiação; era da matéria. Nucleossíntese primordial. Radiação cosmológica de fundo. Inflação. Origem de anisotropias na radiação cosmológica de fundo. Espectro de potência angular. Expansão em multipólos.", "objetivo": "Apresentar conhecimentos básicos de cosmologia, assim como bases sólidas da física e da matemática subjacentes."}, "OVL472": {"nome": "Difusão de Conhecimentos Astronômicos I", "creditos": 4, "horas": 60, "prereq": "Evolução do Pensamento Astronômico", "ementa": "A Busca da Informação Confiável: Origem da Informação, Critérios de Busca, Pesquisas em Bases de Dados. A Transformação das Informações para Difusão: Extração de Conteúdos, Linguagens da Ciência, Planejamento e Realização de textos didáticos ou de divulgação científica. Mídias para Divulgação das Informações: Tipos e Potencialidades. A função de Museus de Ciência, Centros de Ciência e Planetários como difusores de conhecimentos científicos.", "objetivo": "Familiarizar o aluno com os conhecimentos necessários para a difusão de conhecimentos astronômicos para o público em geral."}, "OVL511": {"nome": "Difusão de Conhecimentos Astronômicos II", "creditos": 4, "horas": 60, "prereq": "Difusão de Conhecimentos Astronômicos I", "ementa": "As Tecnologias de Informação e Comunicação como ferramentas para a difusão de informações. Plataformas Educacionais. Ensino à distância. Programas de Comunicação. Aspectos Éticos da Comunicação. Formas de Apresentação das Informações: Palestras, Livros, Textos livres, Oficinas de Astronomia, Programas de Planetário, Experimentos Interativos, Jogos e Simulações, Páginas Web.", "objetivo": "Familiarizar o aluno com os conhecimentos necessários para a difusão de conhecimentos astronômicos para o público em geral e discutir o uso das TICs para difusão de conhecimentos."}, "OVL473": {"nome": "Estrutura e Evolução Estelar", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral, Termodinâmica e Física Estatística", "ementa": "Equações da estrutura estelar. Mecanismos de transporte de energia. Introdução à astrofísica nuclear. Ciclos de reações nos interiores estelares. Nucleossíntese. Proto-estrelas. Evolução pós-sequência principal. Remanescentes estelares.", "objetivo": "Apresentar ao aluno os conhecimentos básicos sobre estrutura e evolução estelar."}, "OVL361": {"nome": "Evolução do Pensamento Astronômico", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral", "ementa": "Cosmogonia dos povos primitivos. A ciência dos gregos. Astronomia na Idade Média. A grande revolução: Copérnico; Kepler; Galileu; Newton. Medindo a Via Láctea. Surgimento da Astrofísica. A escala de tempo do Universo. A Grande Controvérsia: Curtis x Shapley. Os limites do Universo. O Método Científico.", "objetivo": "Apresentar a evolução da Astronomia e o papel dela no cenário da ciência contemporânea, desde seus primórdios até os tempos atuais."}, "OVL503": {"nome": "Fundamentos de Astronomia", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Conhecimentos básicos de Astronomia. A Escala do Universo. Movimentos da Terra e suas consequências. Tempo e calendários. As observações e técnicas astronômicas. A era espacial. Sol e Sistema Solar. As estrelas e o meio interestelar. A Via Láctea e as galáxias. Cosmologia e o Universo. Vida no Universo.", "objetivo": "Apresentar conhecimentos básicos de astronomia, para que possam transmiti-los de modo adequado e identificar as fontes de informação confiáveis."}, "OVL512": {"nome": "Fundamentos de Mecânica Celeste", "creditos": 4, "horas": 60, "prereq": "Mecânica Clássica II, Sistemas Planetários", "ementa": "Computação de órbitas. Ressonâncias. Estudo qualitativo do problema dos 3 corpos. Teoria de perturbações para o Sistema Terra-Lua. Efeitos do achatamento de planetas e arrasto atmosférico. Tópicos em ressonâncias no Sistema Solar. Rotas caóticas no Sistema Solar.", "objetivo": "Apresentar noções sobre o estudo qualitativo do Problema dos 3 corpos e teorias de perturbações através da consideração do Sistema Terra-Lua, Satélites naturais e artificiais; e tópicos em ressonâncias no Sistema Solar."}, "OVL111": {"nome": "Introdução à Astronomia", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Visão qualitativa global da astronomia e da astrofísica apresentada sob a forma de seminários semanais.", "objetivo": "Familiarizar o aluno com as diversas áreas da Astronomia através de palestras apresentadas por diversos professores e astrônomos de instituições científicas."}, "OVL231": {"nome": "Laboratório de Astronomia", "creditos": 2, "horas": 60, "prereq": "Não tem", "ementa": "Atividades que envolvem observação astronômica e experimentos de natureza não computacional. Uso de telescópios de pequeno porte. Introdução de conceitos sobre medidas, astronomia de posição, astrofísica e mecânica celeste.", "objetivo": "Promover um primeiro contato do aluno com a prática astronômica."}, "OVL232": {"nome": "Métodos Computacionais da Astronomia", "creditos": 5, "horas": 90, "prereq": "Álgebra Linear II, Computação I", "ementa": "Cálculo numérico: diferenciação; integração (regras do trapézio, de Simpson e de Bode); zeros de equações (métodos de Newton-Raphson e da secante); método de Monte Carlo; matrizes; equações diferenciais ordinárias; problemas de autovalores e condições de contorno. Cálculo algébrico. Familiarização com aplicativos gráficos, matemáticos e de edição de textos científicos.", "objetivo": "Capacitar o aluno a utilizar recursos computacionais atuais, aprendendo as bases da programação numérica e algébrica."}, "OVL501": {"nome": "Oficinas de Astronomia", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Oficinas hands-on que envolvem o uso de materiais simples e baratos sobre: características dos planetas, proporcionalidade, medidas de distância, rotação e translação da Terra, elementos químicos nas estrelas, sistemas de coordenadas, óptica geométrica, propriedades de lentes e espelhos, topografia e mecanismos de formação de crateras.", "objetivo": "Apresentar conceitos de Física, Química e Matemática de forma lúdica, tendo a Astronomia como ferramenta motivadora."}, "OVL471": {"nome": "Prática Observacional em Astronomia", "creditos": 4, "horas": 90, "prereq": "Física IV, Técnica Observacional Astronômica", "ementa": "Programação de observações astronômicas. Astrometria: objetivos, instrumentos e medidas. Fotometria: objetivos, instrumentos e medidas. Espectroscopia: objetivos, instrumentos e medidas. Realização de observações astrométricas, fotométricas e espectroscópicas. Redução e interpretação dos dados.", "objetivo": "Capacitar o aluno a realizar observações telescópicas nas áreas da astrometria, fotometria e espectroscopia usando instrumentação profissional."}, "OVL513": {"nome": "Radioastronomia", "creditos": 4, "horas": 60, "prereq": "Eletromagnetismo I", "ementa": "Fundamentos de antenas. Potenciais retardados. Antenas. Teorias de conjuntos. Radiointerferômetros. Potência. Brilhância. Temperatura de Antena. Radiofontes galácticas e extragalácticas. Radioemissão do Sol e dos planetas. Remanescentes de supernovas. Radiogaláxias e quasares.", "objetivo": "Apresentar noções sobre o funcionamento de antenas e utilização da radioastronomia para a obtenção de propriedades de objetos astronômicos."}, "OVL514": {"nome": "Simulações Astrofísicas", "creditos": 4, "horas": 60, "prereq": "Astrofísica Geral, Sistemas Planetários", "ementa": "Familiarização com problemas de simulações astrofísicas numéricas, que envolvem a construção de códigos simples: estrutura do átomo de Hidrogênio; problema de 3 corpos; fotoionização de uma nebulosa de hidrogênio; desenvolvimento de um choque em um tubo; síntese espectral de uma linha de absorção estelar; simulação do lançamento de um veículo orbital.", "objetivo": "Fornecer ao aluno a capacidade básica de abordar problemas astrofísicos de maneira numérica."}, "OVL352": {"nome": "Sistemas Planetários", "creditos": 5, "horas": 90, "prereq": "Astronomia Esférica, Mecânica Clássica I", "ementa": "Leis de Kepler. Potencial devido a uma esfera. Sistema de partículas. Forças centrais. O problema de dois corpos. Equação de Kepler. Aplicações do problema de dois corpos em Astronomia. Sistema solar: planetas rochosos e gasosos; asteróides; meio interplanetário. Planetologia comparada. Dinâmica de sistemas planetários. Discos protoplanetários. Exoplanetas: métodos de detecção, propriedades estatísticas.", "objetivo": "Apresentar uma introdução ao Sistema Solar com conhecimentos básicos sobre os corpos do sistema solar, assim como de outros sistemas planetários, em termos de estrutura interna, formação e dinâmica."}, "OVL351": {"nome": "Técnica Observacional Astronômica", "creditos": 5, "horas": 90, "prereq": "Astrofísica Geral, Laboratório de Astronomia", "ementa": "Fontes observadas: propriedades geométricas e físicas. Processos radiativos clássicos e quânticos. Meio de propagação: influências sobre a radiação. Introdução à Óptica Astronômica. Coletores de informação nas diversas faixas espectrais. Detectores de informação: tipos e propriedades. Técnicas de análise: imageamento, polarimetria, magnetometria. Princípios de fotometria e espectroscopia.", "objetivo": "Apresentar os princípios básicos observacionais da Astronomia moderna e os instrumentos e técnicas utilizados em observações astronômicas."}, "OVL515": {"nome": "Tópicos Avançados em Astronomia", "creditos": 4, "horas": 60, "prereq": "Não tem", "ementa": "Tópicos de astronomia e astrofísica visando complementar a formação. Os assuntos podem variar a cada período letivo, sujeito à aprovação prévia pela Comissão de Coordenação do Curso.", "objetivo": "Apresentar problemas atuais da astronomia."}, "OVL474": {"nome": "Tratamento de Dados Astronômicos", "creditos": 4, "horas": 60, "prereq": "Astroestatística, Astrofísica Geral", "ementa": "Data Mining. Realização de trabalho prático baseado em dados astrofísicos. Redução básica de dados astronômicos. Determinação de abundâncias em nebulosas planetárias. Determinação de abundâncias em estrelas. Síntese de populações em galáxias. Propriedades estatísticas de galáxias em grandes amostras. Determinação da constante de Hubble a partir de grandes amostras.", "objetivo": "Familiarizar os alunos com dados astronômicos modernos, suas técnicas de redução e interpretação."}};
+
 // ── STARS ────────────────────────────────────────────────────────
 (function(){
   var l=document.getElementById('stars-layer');
@@ -789,12 +849,160 @@ window.addEventListener('scroll',function(){
 // ── NAV ──────────────────────────────────────────────────────────
 function navTo(id){var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 
-// ── DOW SELECTOR ─────────────────────────────────────────────────
-function toggleDow(btn){btn.classList.toggle('selected');}
-// init: Ter(2) e Sex(5) pré-selecionados
-document.querySelectorAll('.dow-btn').forEach(function(b){
-  b.addEventListener('click',function(){toggleDow(this);});
-});
+
+// ── LOOKUP DISCIPLINA OVL ─────────────────────────────────────────────────────
+var _pendingDisc = null; // disciplina aguardando confirmação
+
+function onCodigoInput(val) {
+  var code = val.trim().toUpperCase();
+  var toast = document.getElementById('disc-toast');
+  if (!code) { toast.style.display='none'; _pendingDisc=null; return; }
+  // Só busca se parece código OVL
+  if (!code.startsWith('OVL')) { toast.style.display='none'; _pendingDisc=null; return; }
+  checkCodigo(code);
+}
+
+function checkCodigo(val) {
+  var code = val.trim().toUpperCase();
+  var toast = document.getElementById('disc-toast');
+  if (!code) { toast.style.display='none'; _pendingDisc=null; return; }
+
+  var disc = CATALOGO_OVL[code];
+  if (disc) {
+    _pendingDisc = { code: code, disc: disc };
+    toast.className = 'found';
+    toast.style.display = 'block';
+    toast.innerHTML =
+      '<div class="toast-header">' +
+        '<span class="toast-code">' + code + '</span>' +
+        '<span style="color:var(--border2)">—</span>' +
+        '<span class="toast-nome">' + disc.nome + '</span>' +
+      '</div>' +
+      '<div class="toast-meta">' + disc.horas + 'h · ' + disc.creditos + ' créditos · Observatório do Valongo / UFRJ</div>' +
+      '<div class="toast-prereq"><strong>Pré-requisitos:</strong> ' + disc.prereq + '</div>' +
+      '<div class="toast-btns">' +
+        '<button class="toast-confirm" onclick="confirmarDisciplina()">✓ Confirmar — ' + disc.nome + '</button>' +
+        '<button class="toast-cancel"  onclick="cancelarDisciplina()">Cancelar</button>' +
+      '</div>';
+  } else if (code.length >= 6) {
+    _pendingDisc = null;
+    toast.className = 'not-found';
+    toast.style.display = 'block';
+    toast.innerHTML =
+      '<span style="font-family:'JetBrains Mono',monospace;font-size:12px">⚠ Código <strong>' + code + '</strong> não encontrado no Catálogo OVL · Observatório do Valongo.</span>' +
+      '<br><span style="font-size:11px;color:var(--dim);margin-top:4px;display:block">Você ainda pode usar o campo livremente para outras disciplinas.</span>';
+  } else {
+    toast.style.display = 'none';
+    _pendingDisc = null;
+  }
+}
+
+function confirmarDisciplina() {
+  if (!_pendingDisc) return;
+  var code = _pendingDisc.code;
+  var disc = _pendingDisc.disc;
+
+  // 1. Preencher campos
+  document.getElementById('disc-codigo').value = code;
+  document.getElementById('disc-nome').value   = disc.nome;
+
+  // 2. Atualizar header institucional
+  document.getElementById('hdr-code').textContent = code;
+  document.getElementById('hdr-name').textContent = disc.nome;
+
+  // 3. Atualizar modal de ementa
+  atualizarEmenta(code, disc);
+
+  // 4. Fechar toast com feedback
+  var toast = document.getElementById('disc-toast');
+  toast.innerHTML =
+    '<span style="color:#50e3a4;font-family:'JetBrains Mono',monospace;font-size:12px">' +
+    '✓ Disciplina confirmada: <strong style="color:var(--text)">' + code + ' — ' + disc.nome + '</strong></span>';
+  setTimeout(function() { toast.style.display='none'; }, 3000);
+  _pendingDisc = null;
+}
+
+function cancelarDisciplina() {
+  document.getElementById('disc-toast').style.display = 'none';
+  _pendingDisc = null;
+}
+
+function atualizarEmenta(code, disc) {
+  // Gerar HTML dos tópicos da ementa
+  var topicos = disc.ementa.split(/[.;]+/).map(function(t){ return t.trim(); }).filter(function(t){ return t.length > 3; });
+  var topicosHTML = topicos.map(function(t){ return '<div class="ementa-topic">' + t + '</div>'; }).join('');
+
+  var modal = document.querySelector('.ementa-modal');
+  if (!modal) return;
+  modal.innerHTML =
+    '<button class="ementa-modal-close" onclick="document.getElementById('ementa-overlay').classList.remove('open')">×</button>' +
+    '<div class="ementa-tag">Ementa do Curso</div>' +
+    '<h2>' + disc.nome + '</h2>' +
+    '<div class="ementa-code">' + code + ' · ' + disc.horas + 'h · ' + disc.creditos + ' créditos · Observatório do Valongo · UFRJ</div>' +
+    '<div class="ementa-divider"></div>' +
+    '<div class="ementa-body">' +
+      '<p style="margin-bottom:10px"><strong>Objetivo:</strong> ' + disc.objetivo + '</p>' +
+      '<strong>Pré-requisitos:</strong> <span style="color:var(--muted)">' + disc.prereq + '</span>' +
+      '<div class="ementa-topics" style="margin-top:14px">' + topicosHTML + '</div>' +
+    '</div>';
+}
+
+// ── DOW: limite de 3 dias ─────────────────────────────────────────────────────
+function toggleDow(btn) {
+  var selected = document.querySelectorAll('.dow-btn.selected');
+  var warn = document.getElementById('dow-limit-warn');
+
+  if (btn.classList.contains('selected')) {
+    // desselecionar sempre permitido
+    btn.classList.remove('selected');
+  } else {
+    if (selected.length >= 3) {
+      // bloquear: já tem 3
+      warn.classList.add('show');
+      // shake visual no btn
+      btn.style.animation = 'none';
+      btn.offsetWidth; // reflow
+      btn.style.animation = '';
+      return;
+    }
+    btn.classList.add('selected');
+  }
+  warn.classList.remove('show');
+  updateDowMaxReached();
+}
+
+function updateDowMaxReached() {
+  var selected = document.querySelectorAll('.dow-btn.selected');
+  var all = document.querySelectorAll('.dow-btn');
+  all.forEach(function(b) {
+    if (selected.length >= 3 && !b.classList.contains('selected')) {
+      b.classList.add('max-reached');
+    } else {
+      b.classList.remove('max-reached');
+    }
+  });
+}
+updateDowMaxReached(); // init
+
+// Trigger lookup no carregamento se código for OVL
+(function() {
+  var inp = document.getElementById('disc-codigo');
+  if (inp && inp.value) {
+    var v = inp.value.trim().toUpperCase();
+    if (v.startsWith('OVL')) {
+      // Auto-confirmar OVL514 padrão silenciosamente
+      var disc = CATALOGO_OVL[v];
+      if (disc) {
+        document.getElementById('hdr-code').textContent = v;
+        document.getElementById('hdr-name').textContent = disc.nome;
+        document.getElementById('disc-nome').value = disc.nome;
+        atualizarEmenta(v, disc);
+      }
+    }
+  }
+})();
+
+// ── DOW SELECTOR (click via onclick no HTML) ─────────────────────────────────
 function getSelectedDows(){
   return Array.from(document.querySelectorAll('.dow-btn.selected')).map(function(b){return parseInt(b.dataset.dow);});
 }
