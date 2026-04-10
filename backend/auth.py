@@ -1,94 +1,62 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+import os
+from datetime import datetime, timedelta
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from sqlmodel import Session, select
 
-from auth import (
-    create_access_token,
-    get_current_professor,
-    hash_password,
-    verify_password,
-)
 from database import get_session
-from models import Professor, ProfessorCreate, ProfessorPublic, Settings
+from models import Professor
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+# ── config ────────────────────────────────────────────────────────
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-inseguro-trocar-em-producao")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 60 * 24 * 7))  # 7 dias
 
-
-def is_registration_open(session: Session) -> bool:
-    """Lê a configuração open_registration da tabela settings.
-    Padrão: True (registro aberto). Para fechar, setar value='false'."""
-    setting = session.exec(
-        select(Settings).where(Settings.key == "open_registration")
-    ).first()
-    if not setting:
-        return True  # padrão: aberto
-    return setting.value.lower() == "true"
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-@router.post("/register", response_model=ProfessorPublic, status_code=201)
-def register(data: ProfessorCreate, session: Session = Depends(get_session)):
-    # Verificar se registro está aberto
-    if not is_registration_open(session):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Registro desativado. Entre em contato com o administrador.",
-        )
-
-    # Verificar duplicata de email
-    existing = session.exec(
-        select(Professor).where(Professor.email == data.email)
-    ).first()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email já cadastrado.",
-        )
-
-    professor = Professor(
-        name=data.name,
-        email=data.email,
-        hashed_password=hash_password(data.password),
-    )
-    session.add(professor)
-    session.commit()
-    session.refresh(professor)
-    return professor
+# ── password ──────────────────────────────────────────────────────
+def hash_password(plain: str) -> str:
+    return pwd_context.hash(plain)
 
 
-@router.post("/login")
-def login(
-    form: OAuth2PasswordRequestForm = Depends(),
-    session: Session = Depends(get_session),
-):
-    professor = session.exec(
-        select(Professor).where(Professor.email == form.username)
-    ).first()
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
 
-    if not professor or not verify_password(form.password, professor.hashed_password):
+
+# ── token ─────────────────────────────────────────────────────────
+def create_access_token(professor_id: int, email: str) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload = {"sub": str(professor_id), "email": email, "exp": expire}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou senha incorretos.",
+            detail="Token inválido ou expirado.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not professor.is_active:
+
+# ── dependency ────────────────────────────────────────────────────
+def get_current_professor(
+    token: str = Depends(oauth2_scheme),
+    session: Session = Depends(get_session),
+) -> Professor:
+    payload = decode_token(token)
+    professor_id = int(payload.get("sub", 0))
+    professor = session.get(Professor, professor_id)
+    if not professor or not professor.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Conta desativada.",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sessão inválida.",
         )
-
-    token = create_access_token(professor.id, professor.email)
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "professor": {
-            "id": professor.id,
-            "name": professor.name,
-            "email": professor.email,
-        },
-    }
-
-
-@router.get("/me", response_model=ProfessorPublic)
-def me(current: Professor = Depends(get_current_professor)):
-    return current
+    return professor
