@@ -1,5 +1,5 @@
 // Configurações compartilhadas entre todas as páginas
-const API = 'https://ovl-cronogramas.onrender.com'; // trocar pela URL do Render após deploy
+const API = 'https://ovl-cronogram-api.onrender.com';
 
 // Em dev local, descomentar:
 // const API = 'http://localhost:8000';

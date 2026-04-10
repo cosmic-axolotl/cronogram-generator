@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OVL Cronogramas — Painel</title>
+<title>OVL Cronogramas — Buscar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -18,200 +18,126 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .s{position:absolute;border-radius:50%;background:#fff;animation:tw var(--d,3s) var(--dl,0s) infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:var(--mn,.1)}50%{opacity:var(--mx,.8)}}
-#scroll-bar{position:fixed;top:0;left:0;z-index:9000;height:2px;width:0%;
-  background:linear-gradient(to right,var(--accent),var(--orange));pointer-events:none}
 
-/* NAV */
 nav{position:sticky;top:0;z-index:100;background:rgba(5,8,15,.92);
-  backdrop-filter:blur(20px);border-bottom:.5px solid rgba(106,171,240,.18);
-  padding:0 28px;}
-.nav-inner{max-width:960px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.nav-brand{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:800;
-  color:#dff0ff;letter-spacing:-.01em}
+  backdrop-filter:blur(20px);border-bottom:.5px solid rgba(106,171,240,.18);padding:0 28px}
+.nav-inner{max-width:860px;margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:800;color:#dff0ff}
 .nav-brand span{color:var(--accent)}
-.nav-right{display:flex;align-items:center;gap:10px}
-.prof-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
-  background:rgba(8,14,28,.72);border:.5px solid var(--border2);border-radius:20px;padding:5px 12px}
-.btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;
-  border:none;font-family:'Exo 2',sans-serif;transition:all .2s}
-.btn-ghost{background:rgba(8,14,28,.72);border:.5px solid var(--border2);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--text)}
-.btn-accent{background:var(--accent);color:#05080f}
-.btn-accent:hover{opacity:.88}
+.btn-sm{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;
+  border:.5px solid var(--border2);color:var(--muted);background:rgba(8,14,28,.72);
+  font-family:'Exo 2',sans-serif;text-decoration:none;display:inline-flex;align-items:center;transition:all .2s}
+.btn-sm:hover{border-color:var(--accent);color:var(--text)}
 
-/* LAYOUT */
-.wrapper{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:40px 28px 80px}
-header{padding-bottom:28px;border-bottom:.5px solid var(--border);margin-bottom:32px}
+.wrapper{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:48px 28px 80px}
+
+header{text-align:center;margin-bottom:40px}
 .hdr-badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;
   font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;
   background:rgba(8,14,28,.72);border:.5px solid rgba(100,155,220,.25);
-  padding:4px 12px;border-radius:20px;margin-bottom:14px;backdrop-filter:blur(10px)}
-h1{font-family:'Urbanist',sans-serif;font-size:clamp(22px,4vw,34px);font-weight:800;
-  color:#dff0ff;letter-spacing:-.02em}
+  padding:4px 12px;border-radius:20px;margin-bottom:14px}
+h1{font-family:'Urbanist',sans-serif;font-size:clamp(22px,4vw,36px);font-weight:800;
+  color:#dff0ff;letter-spacing:-.02em;margin-bottom:8px}
 h1 span{color:var(--accent)}
-.sub{margin-top:8px;font-size:14px;color:var(--muted)}
+.sub{font-size:14px;color:var(--muted)}
 
-/* SEMESTRE SELECTOR */
-.sem-row{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
-.sem-row label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.07em}
-.sem-row select{background:rgba(8,14,28,.88);border:.5px solid var(--border2);
-  color:var(--text);border-radius:7px;padding:7px 12px;font-family:'Exo 2',sans-serif;
-  font-size:13px;outline:none;cursor:pointer}
-.sem-row select:focus{border-color:var(--accent)}
+/* SEARCH BOX */
+.search-box{display:flex;gap:10px;margin-bottom:10px}
+.search-input{flex:1;background:rgba(8,14,28,.88);border:.5px solid var(--border2);
+  color:var(--text);border-radius:10px;padding:13px 18px;font-family:'Exo 2',sans-serif;
+  font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,171,240,.12)}
+.search-input::placeholder{color:var(--dim)}
+.search-btn{padding:13px 24px;background:var(--accent);color:#05080f;border:none;
+  border-radius:10px;font-family:'Exo 2',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:opacity .2s;white-space:nowrap}
+.search-btn:hover{opacity:.88}
+.search-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
+  margin-bottom:28px;text-align:center}
 
-/* SEC TITLE */
-.sec-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;
-  letter-spacing:.15em;color:var(--muted);margin-bottom:14px;
-  display:flex;align-items:center;gap:10px}
-.sec-title::after{content:'';flex:1;height:.5px;background:var(--border)}
+/* RESULTS */
+.results-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+  margin-bottom:14px;min-height:18px}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 
-/* TURMA CARDS */
-.turmas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.turma-card{background:var(--panel);border:.5px solid var(--border);border-radius:14px;
-  padding:20px 22px;backdrop-filter:blur(12px);cursor:pointer;
-  transition:border-color .2s,transform .15s;position:relative}
-.turma-card:hover{border-color:var(--border2);transform:translateY(-2px)}
-.tc-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);
-  letter-spacing:.1em;margin-bottom:6px}
-.tc-nome{font-family:'Urbanist',sans-serif;font-size:16px;font-weight:700;
+.res-card{background:var(--panel);border:.5px solid var(--border);border-radius:14px;
+  padding:18px 20px;backdrop-filter:blur(12px);cursor:pointer;
+  transition:border-color .2s,transform .15s;text-decoration:none;display:block;
+  position:relative}
+.res-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.rc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rc-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.08em}
+.rc-sem{font-size:11px;color:var(--dim);margin-left:auto;font-family:'JetBrains Mono',monospace}
+.rc-nome{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:700;
   color:#dff0ff;margin-bottom:4px}
-.tc-sem{font-size:12px;color:var(--muted)}
-.tc-status{position:absolute;top:14px;right:14px;font-size:10px;padding:3px 8px;
-  border-radius:20px;font-family:'JetBrains Mono',monospace;letter-spacing:.05em}
-.tc-pub{background:rgba(80,227,164,.1);border:.5px solid rgba(80,227,164,.3);color:#50e3a4}
-.tc-draft{background:rgba(100,155,220,.06);border:.5px solid rgba(100,155,220,.15);color:var(--dim)}
-.tc-actions{display:flex;gap:7px;margin-top:14px;padding-top:12px;border-top:.5px solid var(--border)}
-.tc-btn{flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:600;
-  cursor:pointer;border:none;font-family:'Exo 2',sans-serif;text-align:center;transition:all .2s}
-.tc-btn-edit{background:rgba(106,171,240,.1);color:var(--accent);border:.5px solid rgba(106,171,240,.25)}
-.tc-btn-edit:hover{background:rgba(106,171,240,.2)}
-.tc-btn-del{background:rgba(255,85,85,.07);color:#ff7070;border:.5px solid rgba(255,85,85,.2)}
-.tc-btn-del:hover{background:rgba(255,85,85,.15)}
+.rc-prof{font-size:12px;color:var(--muted);margin-bottom:8px}
+.rc-updated{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)}
+.rc-arrow{position:absolute;right:16px;bottom:18px;font-size:18px;color:var(--dim);
+  transition:color .2s,transform .15s}
+.res-card:hover .rc-arrow{color:var(--accent);transform:translateX(3px)}
 
-/* NOVA TURMA */
-.add-card{background:rgba(106,171,240,.04);border:.5px dashed rgba(106,171,240,.25);
-  border-radius:14px;padding:20px 22px;display:flex;align-items:center;justify-content:center;
-  gap:10px;cursor:pointer;transition:all .2s;color:var(--accent);font-size:14px;font-weight:600}
-.add-card:hover{background:rgba(106,171,240,.09);border-color:rgba(106,171,240,.45)}
+/* EMPTY / LOADING */
+.state-msg{text-align:center;padding:56px 0;color:var(--muted)}
+.state-msg .icon{font-size:36px;margin-bottom:14px}
+.state-msg p{font-size:13px;color:var(--dim);margin-top:6px}
+.loading-dots::after{content:'...';animation:dots 1.2s steps(3,end) infinite}
+@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
 
-/* MODAL */
-#modal-overlay{display:none;position:fixed;inset:0;z-index:400;
-  background:rgba(2,4,14,.82);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center}
-#modal-overlay.open{display:flex}
-.modal{background:rgba(8,14,28,.97);border:.5px solid var(--border2);border-radius:18px;
-  padding:32px 36px;max-width:460px;width:90%;
-  animation:mIn .28s cubic-bezier(.34,1.56,.64,1)}
-@keyframes mIn{from{transform:scale(.92) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-.modal h2{font-family:'Urbanist',sans-serif;font-size:17px;font-weight:800;
-  color:#dff0ff;margin-bottom:20px}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
-.field label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.07em}
-.field input,.field select{background:rgba(8,14,28,.9);border:.5px solid var(--border2);
-  color:var(--text);border-radius:7px;padding:9px 13px;font-family:'Exo 2',sans-serif;
-  font-size:13px;outline:none;transition:border-color .2s}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.field select option{background:#0d1526}
-.modal-actions{display:flex;gap:9px;margin-top:18px}
-.btn-full{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:700;
-  cursor:pointer;border:none;font-family:'Exo 2',sans-serif;transition:all .2s}
-.btn-ok{background:var(--accent);color:#05080f}
-.btn-ok:hover{opacity:.88}
-.btn-cancel{background:rgba(8,14,28,.8);border:.5px solid var(--border2);color:var(--muted)}
-.btn-cancel:hover{border-color:var(--accent);color:var(--text)}
-.msg-modal{font-size:12px;color:#ff7070;margin-top:8px;display:none}
-.msg-modal.show{display:block}
-
-/* EMPTY */
-.empty{text-align:center;padding:48px 0;color:var(--muted);font-size:14px}
-.empty p{margin-top:8px;font-size:12px;color:var(--dim)}
-
-/* LOADING */
-.loading{text-align:center;padding:40px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px}
+footer{position:relative;z-index:2;text-align:center;padding:2rem 2rem;
+  font-size:11px;color:var(--dim);font-family:'Exo 2',sans-serif;letter-spacing:.04em}
 </style>
 </head>
 <body>
 
 <div id="stars"></div>
-<div id="scroll-bar"></div>
 
 <nav>
   <div class="nav-inner">
     <div class="nav-brand">OVL <span>Cronogramas</span></div>
-    <div class="nav-right">
-      <span class="prof-badge" id="prof-badge">—</span>
-      <a href="buscar.html" class="btn-sm btn-ghost">Busca pública</a>
-      <button class="btn-sm btn-ghost" onclick="logout()">Sair</button>
+    <div style="display:flex;gap:8px">
+      <a href="index.html" class="btn-sm">Área do professor</a>
     </div>
   </div>
 </nav>
 
-<!-- MODAL: nova turma -->
-<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h2 id="modal-title">Nova turma</h2>
-    <div class="field">
-      <label>Código da disciplina</label>
-      <input type="text" id="m-codigo" placeholder="ex: OVL514" style="text-transform:uppercase">
-    </div>
-    <div class="field">
-      <label>Nome da disciplina</label>
-      <input type="text" id="m-nome" placeholder="ex: Simulações Astrofísicas">
-    </div>
-    <div class="field">
-      <label>Semestre</label>
-      <select id="m-sem">
-        <option value="2026.1">2026.1</option>
-        <option value="2026.2" selected>2026.2</option>
-        <option value="2027.1">2027.1</option>
-        <option value="2027.2">2027.2</option>
-      </select>
-    </div>
-    <div class="msg-modal" id="msg-modal"></div>
-    <div class="modal-actions">
-      <button class="btn-full btn-ok" id="btn-modal-ok" onclick="saveTurma()">Salvar</button>
-      <button class="btn-full btn-cancel" onclick="closeModal()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 <div class="wrapper">
   <header>
-    <div class="hdr-badge">Painel do Professor</div>
-    <h1>Minhas <span>Disciplinas</span></h1>
-    <p class="sub">Gerencie e publique cronogramas para seus alunos</p>
+    <div class="hdr-badge">Busca pública · sem login</div>
+    <h1>Buscar <span>Cronogramas</span></h1>
+    <p class="sub">Encontre o cronograma da sua disciplina pelo código ou nome do professor</p>
   </header>
 
-  <div class="sem-row">
-    <label>Filtrar por semestre</label>
-    <select id="filter-sem" onchange="loadTurmas()">
-      <option value="">Todos</option>
-      <option value="2026.1">2026.1</option>
-      <option value="2026.2" selected>2026.2</option>
-      <option value="2027.1">2027.1</option>
-    </select>
+  <div class="search-box">
+    <input class="search-input" type="text" id="q" placeholder="ex: OVL514, simulações, prof. Costa..." oninput="onSearchInput()">
+    <button class="search-btn" onclick="doSearch()">Buscar</button>
   </div>
+  <p class="search-hint">Somente cronogramas publicados pelos professores aparecem aqui</p>
 
-  <div class="sec-title">🎓 Turmas cadastradas</div>
-  <div id="turmas-grid" class="turmas-grid">
-    <div class="loading">Carregando turmas…</div>
+  <div class="results-info" id="results-info"></div>
+  <div class="results-grid" id="results-grid">
+    <div class="state-msg">
+      <div class="icon">🔭</div>
+      <div>Digite algo para buscar</div>
+      <p>ou deixe em branco para ver todos os cronogramas publicados</p>
+    </div>
   </div>
 </div>
+
+<footer>⭐ OVL Cronogramas · Observatório do Valongo · UFRJ ⭐</footer>
 
 <script src="_shared.js"></script>
 <script>
 'use strict';
-requireAuth();
 
-var turmas = [];
-var editingId = null;
+var COLORS = ['#6aabf0','#a78bfa','#f0b070','#50e3a4','#ff79c6','#ff5555','#ffd32a','#00d2d3'];
+var searchTimer = null;
+var lastQuery = null;
 
-// Stars + scroll bar
+// Stars
 (function() {
   var l = document.getElementById('stars');
-  for (var i = 0; i < 50; i++) {
+  for (var i = 0; i < 55; i++) {
     var s = document.createElement('div'); s.className = 's';
     var sz = Math.random() * 2 + .5;
     s.style.cssText = 'left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;'
@@ -220,136 +146,81 @@ var editingId = null;
       +';--mx:'+(0.4+Math.random()*.5).toFixed(2)+';';
     l.appendChild(s);
   }
-  window.addEventListener('scroll', function() {
-    var mx = document.documentElement.scrollHeight - window.innerHeight;
-    document.getElementById('scroll-bar').style.width = (mx > 0 ? (window.scrollY/mx)*100 : 0) + '%';
-  }, { passive: true });
 })();
 
-// Mostrar nome do prof
-var prof = getProf();
-if (prof) document.getElementById('prof-badge').textContent = prof.name;
-
-function logout() { clearAuth(); window.location.href = 'index.html'; }
-
-var COLORS = ['#6aabf0','#a78bfa','#f0b070','#50e3a4','#ff79c6','#ff5555','#ffd32a'];
-
-async function loadTurmas() {
-  var sem = document.getElementById('filter-sem').value;
-  var res = await apiFetch('/professor/turmas');
-  if (!res) return;
-  var all = await res.json();
-  turmas = sem ? all.filter(function(t) { return t.semestre === sem; }) : all;
-  renderTurmas();
+// Busca com debounce 400ms enquanto digita
+function onSearchInput() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(doSearch, 400);
 }
 
-function renderTurmas() {
-  var grid = document.getElementById('turmas-grid');
-  if (!turmas.length) {
-    grid.innerHTML = '<div class="empty">Nenhuma turma cadastrada para este semestre.<p>Adicione sua primeira disciplina.</p></div>';
-    renderAddCard();
+async function doSearch() {
+  var q = document.getElementById('q').value.trim();
+  if (q === lastQuery) return;
+  lastQuery = q;
+
+  var grid = document.getElementById('results-grid');
+  var info = document.getElementById('results-info');
+  grid.innerHTML = '<div class="state-msg"><div class="loading-dots">Buscando</div></div>';
+  info.textContent = '';
+
+  var url = '/public/search' + (q ? '?q=' + encodeURIComponent(q) : '');
+  var res = await fetch(API + url);
+  if (!res.ok) {
+    grid.innerHTML = '<div class="state-msg"><div class="icon">⚠</div><div>Erro ao buscar. Tente novamente.</div></div>';
     return;
   }
+  var data = await res.json();
+  renderResults(data, q);
+}
+
+function renderResults(data, q) {
+  var grid = document.getElementById('results-grid');
+  var info = document.getElementById('results-info');
+
+  if (!data.length) {
+    var msg = q ? 'Nenhum resultado para "' + q + '".' : 'Nenhum cronograma publicado ainda.';
+    grid.innerHTML = '<div class="state-msg"><div class="icon">🌌</div><div>' + msg + '</div><p>Professores precisam publicar o cronograma para ele aparecer aqui.</p></div>';
+    info.textContent = '';
+    return;
+  }
+
+  info.textContent = data.length + ' cronograma' + (data.length > 1 ? 's' : '') + ' encontrado' + (data.length > 1 ? 's' : '');
   grid.innerHTML = '';
-  turmas.forEach(function(t, i) {
+
+  data.forEach(function(r, i) {
     var color = COLORS[i % COLORS.length];
-    var isPub = t.publicado; // virá do cronograma associado — por ora check por request separado
-    var card = document.createElement('div');
-    card.className = 'turma-card';
+    var href = 'turma.html?codigo=' + encodeURIComponent(r.codigo) + '&semestre=' + encodeURIComponent(r.semestre);
+    var card = document.createElement('a');
+    card.className = 'res-card';
+    card.href = href;
     card.style.borderLeft = '3px solid ' + color;
     card.innerHTML =
-      '<div class="tc-status tc-draft" id="pub-'+t.id+'">rascunho</div>'+
-      '<div class="tc-code">'+t.codigo+'</div>'+
-      '<div class="tc-nome">'+t.nome+'</div>'+
-      '<div class="tc-sem">'+t.semestre+'</div>'+
-      '<div class="tc-actions">'+
-        '<button class="tc-btn tc-btn-edit" onclick="goEditor('+t.id+',\''+encodeURIComponent(t.codigo)+'\',\''+encodeURIComponent(t.semestre)+'\')">Editar cronograma</button>'+
-        '<button class="tc-btn tc-btn-del" onclick="deleteTurma('+t.id+',\''+t.nome+'\')">Remover</button>'+
-      '</div>';
+      '<div class="rc-top">'+
+        '<div class="rc-dot" style="background:'+color+'"></div>'+
+        '<span class="rc-code">'+r.codigo+'</span>'+
+        '<span class="rc-sem">'+r.semestre+'</span>'+
+      '</div>'+
+      '<div class="rc-nome">'+r.nome+'</div>'+
+      '<div class="rc-prof">Prof. '+r.professor_name+'</div>'+
+      '<div class="rc-updated">atualizado em '+fmtDate(r.updated_at)+'</div>'+
+      '<div class="rc-arrow">›</div>';
     grid.appendChild(card);
-    // Verificar se tem cronograma publicado
-    checkPub(t.id);
   });
-  renderAddCard();
 }
 
-function renderAddCard() {
-  var grid = document.getElementById('turmas-grid');
-  var add = document.createElement('div');
-  add.className = 'add-card';
-  add.innerHTML = '＋ Adicionar disciplina';
-  add.onclick = function() { openModal(); };
-  grid.appendChild(add);
+function fmtDate(iso) {
+  var d = new Date(iso);
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
-async function checkPub(turmaId) {
-  var res = await apiFetch('/cronogramas/' + turmaId);
-  if (!res || !res.ok) return;
-  var data = await res.json();
-  var el = document.getElementById('pub-' + turmaId);
-  if (el && data.publicado) {
-    el.className = 'tc-status tc-pub';
-    el.textContent = 'publicado';
-  }
-}
+// Buscar todos ao abrir
+doSearch();
 
-function goEditor(id, codigo, semestre) {
-  localStorage.setItem('ovl_turma_id', id);
-  localStorage.setItem('ovl_turma_codigo', decodeURIComponent(codigo));
-  localStorage.setItem('ovl_turma_semestre', decodeURIComponent(semestre));
-  window.location.href = 'editor.html';
-}
-
-// Modal nova/editar turma
-function openModal(turmaId) {
-  editingId = turmaId || null;
-  document.getElementById('modal-title').textContent = editingId ? 'Editar turma' : 'Nova turma';
-  if (!editingId) {
-    document.getElementById('m-codigo').value = '';
-    document.getElementById('m-nome').value = '';
-  }
-  document.getElementById('msg-modal').className = 'msg-modal';
-  document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(function() { document.getElementById('m-codigo').focus(); }, 100);
-}
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-
-async function saveTurma() {
-  var codigo = document.getElementById('m-codigo').value.trim().toUpperCase();
-  var nome   = document.getElementById('m-nome').value.trim();
-  var sem    = document.getElementById('m-sem').value;
-  var msgEl  = document.getElementById('msg-modal');
-
-  if (!codigo || !nome) { msgEl.textContent = 'Preencha código e nome.'; msgEl.className = 'msg-modal show'; return; }
-
-  var btn = document.getElementById('btn-modal-ok');
-  btn.disabled = true; btn.textContent = 'Salvando...';
-
-  var path   = editingId ? '/professor/turmas/' + editingId : '/professor/turmas';
-  var method = editingId ? 'PUT' : 'POST';
-  var res = await apiFetch(path, { method: method, body: JSON.stringify({ codigo: codigo, nome: nome, semestre: sem }) });
-  var data = await res.json();
-
-  btn.disabled = false; btn.textContent = 'Salvar';
-
-  if (!res.ok) { msgEl.textContent = data.detail || 'Erro ao salvar.'; msgEl.className = 'msg-modal show'; return; }
-
-  closeModal();
-  loadTurmas();
-}
-
-async function deleteTurma(id, nome) {
-  if (!confirm('Remover a turma "' + nome + '"? O cronograma salvo será perdido.')) return;
-  var res = await apiFetch('/professor/turmas/' + id, { method: 'DELETE' });
-  if (res && res.ok) loadTurmas();
-}
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
-  if (e.key === 'Enter' && document.getElementById('modal-overlay').classList.contains('open')) saveTurma();
+// Enter para buscar
+document.getElementById('q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { clearTimeout(searchTimer); doSearch(); }
 });
-
-loadTurmas();
 </script>
 </body>
 </html>
