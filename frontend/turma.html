@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVL Cronogramas — Turma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05080f;--text:#dce8f5;--muted:#7a9bbf;--dim:#2e4a6a;
+  --accent:#6aabf0;--orange:#e8934a;
+  --border:rgba(100,155,220,.15);--border2:rgba(100,155,220,.35);
+  --panel:rgba(8,14,28,.82);
+}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.s{position:absolute;border-radius:50%;background:#fff;animation:tw var(--d,3s) var(--dl,0s) infinite ease-in-out}
+@keyframes tw{0%,100%{opacity:var(--mn,.1)}50%{opacity:var(--mx,.8)}}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(5,8,15,.92);
+  backdrop-filter:blur(20px);border-bottom:.5px solid rgba(106,171,240,.18);padding:0 28px}
+.nav-inner{max-width:1100px;margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:800;color:#dff0ff}
+.nav-brand span{color:var(--accent)}
+.btn-sm{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;
+  border:.5px solid var(--border2);color:var(--muted);background:rgba(8,14,28,.72);
+  font-family:'Exo 2',sans-serif;text-decoration:none;display:inline-flex;align-items:center;transition:all .2s}
+.btn-sm:hover{border-color:var(--accent);color:var(--text)}
+
+.wrapper{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:0 24px 80px}
+
+/* CABEÇALHO DA TURMA */
+.turma-hdr{padding:40px 0 28px;border-bottom:.5px solid var(--border);margin-bottom:32px}
+.pub-badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:#50e3a4;letter-spacing:.12em;text-transform:uppercase;
+  background:rgba(80,227,164,.08);border:.5px solid rgba(80,227,164,.25);
+  padding:4px 12px;border-radius:20px;margin-bottom:14px}
+h1{font-family:'Urbanist',sans-serif;font-size:clamp(20px,4vw,34px);font-weight:800;
+  color:#dff0ff;letter-spacing:-.02em;margin-bottom:6px}
+h1 span{color:var(--accent)}
+.turma-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.meta-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(8,14,28,.72);border:.5px solid rgba(100,155,220,.2);
+  border-radius:20px;padding:4px 12px}
+.meta-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+/* READONLY NOTICE */
+.readonly-notice{display:flex;align-items:center;gap:10px;padding:11px 16px;
+  background:rgba(46,74,106,.12);border:.5px solid rgba(46,74,106,.3);border-radius:10px;
+  font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-bottom:28px}
+
+/* STATS */
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+.stat-c{background:rgba(8,14,28,.72);border:.5px solid var(--border);border-radius:10px;
+  padding:12px 16px;min-width:110px}
+.stat-n{font-family:'Urbanist',sans-serif;font-size:22px;font-weight:800;color:#dff0ff}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px;
+  background:rgba(8,14,28,.5);padding:11px 15px;border-radius:10px}
+.leg-i{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.leg-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.leg-ev{border:2px solid rgba(255,255,255,.5)}
+
+/* CALENDAR */
+.cal-container{margin-bottom:28px}
+.cal-month{margin-bottom:22px;opacity:0;transform:translateY(12px);transition:opacity .4s,transform .4s}
+.cal-month.show{opacity:1;transform:none}
+.month-lbl{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:700;
+  color:var(--accent);margin-bottom:8px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-hdr{text-align:center;font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--dim);padding:4px 0;letter-spacing:.05em}
+.cal-day{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-size:11px;position:relative;
+  min-height:34px;cursor:default}
+.dn{font-size:11px;line-height:1;position:relative;z-index:1}
+.dl{font-size:7px;margin-top:2px;opacity:.85;letter-spacing:.03em;
+  position:relative;z-index:1;text-align:center;overflow:hidden;white-space:nowrap;max-width:100%}
+.cal-day.emp{background:transparent;pointer-events:none}
+.cal-day.out{background:rgba(255,255,255,.02);color:var(--dim);border:.5px solid rgba(255,255,255,.04)}
+.cal-day.hol{background:rgba(232,147,74,.08);color:var(--orange);border:.5px solid rgba(232,147,74,.2)}
+.cal-day.exc{background:rgba(255,85,85,.1);color:#ff5555;border:.5px solid rgba(255,85,85,.25)}
+.cal-day.wknd{background:rgba(255,255,255,.02);color:var(--dim);border:.5px solid rgba(255,255,255,.03)}
+.cal-day.free{border:.5px solid rgba(100,155,220,.1);color:var(--muted);background:rgba(100,155,220,.03)}
+.cal-day.cont{font-weight:600;color:#fff;border:none}
+.cal-day.eval{font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.55)!important}
+.cal-day.eval::before{content:'';position:absolute;inset:0;border-radius:5px;background:rgba(255,255,255,.12)}
+
+/* TOOLTIP */
+#tt{position:fixed;z-index:9999;pointer-events:none;
+  background:rgba(10,17,35,.95);border:.5px solid var(--border2);border-radius:10px;
+  padding:9px 13px;font-size:12px;color:var(--text);min-width:150px;max-width:220px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s}
+#tt.show{opacity:1;transform:none}
+.tt-hdr{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);
+  margin-bottom:3px;letter-spacing:.07em;text-transform:uppercase}
+.tt-title{font-weight:600;margin-bottom:2px}
+.tt-sub{color:var(--muted);font-size:11px;line-height:1.4}
+.tt-dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* AVAL LIST */
+.aval-list{display:flex;flex-direction:column;gap:9px;margin-bottom:28px}
+.aval-item{display:flex;align-items:center;gap:13px;padding:13px 17px;
+  background:rgba(8,14,28,.75);border-radius:12px;border:.5px solid var(--border);
+  opacity:0;transform:translateX(-10px);transition:opacity .35s,transform .35s}
+.aval-item.show{opacity:1;transform:none}
+.aval-sw{width:10px;height:40px;border-radius:5px;flex-shrink:0}
+.aval-info{flex:1}.aval-info h4{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px}
+.aval-info p{font-size:12px;color:var(--muted)}
+.aval-peso{font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:rgba(8,14,28,.8);border:.5px solid var(--border);
+  padding:3px 9px;border-radius:4px;color:var(--muted);white-space:nowrap}
+.aval-meta{text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);line-height:1.9}
+
+/* GCAL */
+.gcal-sec{margin-top:24px;background:rgba(8,14,28,.72);border:.5px solid var(--border);
+  border-radius:14px;padding:20px 22px;backdrop-filter:blur(12px)}
+.gcal-title{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:700;
+  color:#dff0ff;margin-bottom:5px}
+.gcal-desc{font-size:12px;color:var(--muted);margin-bottom:14px}
+.gcal-btns{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}
+.btn-gcal{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Exo 2',sans-serif;
+  background:#4285f4;color:#fff;transition:opacity .2s}
+.btn-gcal:hover{opacity:.88}
+.btn-ics{background:rgba(80,227,164,.1);border:.5px solid rgba(80,227,164,.3);
+  color:#50e3a4;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:'Exo 2',sans-serif;transition:all .2s}
+.btn-ics:hover{background:rgba(80,227,164,.2)}
+.gcal-list{display:flex;flex-direction:column;gap:7px}
+.gcal-item{display:flex;align-items:center;gap:11px;padding:9px 13px;
+  border-radius:8px;background:rgba(8,14,28,.5);border:.5px solid var(--border)}
+.gcal-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.gcal-info{flex:1;min-width:0}
+.gcal-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcal-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+.btn-gcal-i{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;
+  border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;
+  background:rgba(66,133,244,.15);color:#7baaf7;border:.5px solid rgba(66,133,244,.3);
+  text-decoration:none;font-family:'Exo 2',sans-serif;transition:all .2s}
+.btn-gcal-i:hover{background:rgba(66,133,244,.28)}
+
+/* SEC TITLE */
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.15em;color:var(--muted);margin-bottom:14px;
+  display:flex;align-items:center;gap:10px}
+.sec-title::after{content:'';flex:1;height:.5px;background:var(--border)}
+
+/* LOADING / ERROR */
+.state-msg{text-align:center;padding:80px 0;color:var(--muted);font-size:14px;position:relative;z-index:2}
+.state-msg .ico{font-size:40px;margin-bottom:16px}
+
+footer{position:relative;z-index:2;text-align:center;padding:2rem 2rem;
+  font-size:11px;color:var(--dim);font-family:'Exo 2',sans-serif;letter-spacing:.04em}
+
+@media(max-width:600px){
+  .turma-meta{gap:8px}.gcal-btns{flex-direction:column}
+  .btn-gcal,.btn-ics{width:100%;justify-content:center}
+  .cal-day{min-height:26px;font-size:10px}.dl{display:none}
+  .aval-item{flex-wrap:wrap}.aval-meta{text-align:left;width:100%;border-top:.5px solid var(--border);padding-top:6px}
+}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div id="tt"><div class="tt-hdr" id="tt-hdr"></div><div class="tt-title" id="tt-title"></div><div class="tt-sub" id="tt-sub"></div></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand">OVL <span>Cronogramas</span></div>
+    <div style="display:flex;gap:8px">
+      <a href="buscar.html" class="btn-sm">← Buscar</a>
+      <a href="index.html" class="btn-sm">Área do professor</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrapper">
+  <div id="main-content">
+    <div class="state-msg"><div class="ico">🌌</div><div>Carregando cronograma…</div></div>
+  </div>
+</div>
+
+<footer>⭐ OVL Cronogramas · Observatório do Valongo · UFRJ ⭐</footer>
+
+<script src="_shared.js"></script>
+<script>
+'use strict';
+
+// Stars
+(function() {
+  var l = document.getElementById('stars');
+  for (var i = 0; i < 55; i++) {
+    var s = document.createElement('div'); s.className = 's';
+    var sz = Math.random() * 2 + .5;
+    s.style.cssText = 'left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;'
+      +'width:'+sz+'px;height:'+sz+'px;--d:'+(2+Math.random()*4)+'s;'
+      +'--dl:'+(Math.random()*5)+'s;--mn:'+(0.05+Math.random()*.15).toFixed(2)
+      +';--mx:'+(0.4+Math.random()*.5).toFixed(2)+';';
+    l.appendChild(s);
+  }
+})();
+
+// Constantes do calendário
+var MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var DOW_PT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+var HOLS = [
+  {d:new Date(2026,3,3),  l:'Sexta-Feira Santa'},
+  {d:new Date(2026,3,21), l:'Tiradentes'},
+  {d:new Date(2026,3,24), l:'Recesso'},
+  {d:new Date(2026,4,1),  l:'Dia do Trabalhador'},
+  {d:new Date(2026,5,5),  l:'Recesso'},
+  {d:new Date(2026,10,20),l:'Consciência Negra'}
+];
+var SEM = {
+  '2026.1':{s:new Date(2026,2,9),  e:new Date(2026,6,18)},
+  '2026.2':{s:new Date(2026,7,10), e:new Date(2026,11,19)}
+};
+var TIPOS = {
+  prova:  {label:'Prova',       color:'#6aabf0'},
+  rel:    {label:'Relatório',   color:'#a78bfa'},
+  trab:   {label:'Trabalho',    color:'#f0b070'},
+  semi:   {label:'Seminário',   color:'#50e3a4'},
+  final:  {label:'Prova Final', color:'#ff79c6'},
+  segunda:{label:'2ª Chamada',  color:'#ff5555'}
+};
+var ACOLORS = ['#6aabf0','#a78bfa','#f0b070','#50e3a4','#ff79c6','#ff5555','#ffd32a'];
+
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function clone(d){return new Date(d.getTime());}
+function addD(d,n){var r=clone(d);r.setDate(r.getDate()+n);return r;}
+function fmt(d){return d.toLocaleDateString('pt-BR');}
+function fmtFull(d){return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function isHol(d){return HOLS.find(function(h){return sameDay(h.d,d);});}
+function fmtGcal(d){return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+
+// Pegar parâmetros da URL
+var params = new URLSearchParams(window.location.search);
+var CODIGO  = (params.get('codigo') || '').toUpperCase();
+var SEMESTRE = params.get('semestre') || '';
+
+async function init() {
+  if (!CODIGO || !SEMESTRE) {
+    showError('Parâmetros inválidos. Acesse via busca.');
+    return;
+  }
+
+  // Buscar metadados
+  var metaRes = await fetch(API + '/public/turmas/' + CODIGO + '/' + encodeURIComponent(SEMESTRE) + '/meta');
+  if (!metaRes.ok) { showError('Cronograma não encontrado ou não publicado.'); return; }
+  var meta = await metaRes.json();
+
+  // Buscar config do cronograma
+  var cronoRes = await fetch(API + '/public/turmas/' + CODIGO + '/' + encodeURIComponent(SEMESTRE));
+  if (!cronoRes.ok) { showError('Cronograma não disponível.'); return; }
+  var crono = await cronoRes.json();
+
+  var config = {};
+  try { config = JSON.parse(crono.config_json); } catch(e) {}
+
+  document.title = 'OVL — ' + meta.codigo + ' · ' + meta.semestre;
+  renderPage(meta, config);
+}
+
+function showError(msg) {
+  document.getElementById('main-content').innerHTML =
+    '<div class="state-msg"><div class="ico">🌌</div><div>' + msg + '</div></div>';
+}
+
+function renderPage(meta, config) {
+  var sem = config.sem || SEMESTRE;
+  var sched = config.sched || [];
+  var dows  = config.dows || [];
+
+  var content = document.getElementById('main-content');
+  content.innerHTML = '';
+
+  // Cabeçalho
+  var hdr = document.createElement('div');
+  hdr.className = 'turma-hdr';
+  hdr.innerHTML =
+    '<div class="pub-badge">◈ Cronograma publicado</div>'+
+    '<h1><span>'+meta.codigo+'</span> — '+meta.nome+'</h1>'+
+    '<div class="turma-meta">'+
+      '<span class="meta-chip"><span class="dot"></span>'+meta.semestre+'</span>'+
+      '<span class="meta-chip"><span class="dot" style="background:var(--orange)"></span>Prof. '+meta.professor+'</span>'+
+      '<span class="meta-chip"><span class="dot" style="background:var(--rel)"></span>Atualizado: '+meta.updated_at+'</span>'+
+    '</div>';
+  content.appendChild(hdr);
+
+  // Aviso readonly
+  var notice = document.createElement('div');
+  notice.className = 'readonly-notice';
+  notice.innerHTML = '🔒 Visualização somente leitura — apenas o professor pode editar este cronograma';
+  content.appendChild(notice);
+
+  if (!sched.length) {
+    var empty = document.createElement('div');
+    empty.className = 'state-msg';
+    empty.innerHTML = '<div class="ico">📅</div><div>Cronograma ainda sem avaliações configuradas.</div>';
+    content.appendChild(empty);
+    return;
+  }
+
+  // Stats
+  var totalAulas = sched.reduce(function(s,r){return s+(r.cDays||[]).length;},0);
+  var lastEval = null;
+  sched.forEach(function(s){if(s.evDay&&(!lastEval||new Date(s.evDay)>lastEval))lastEval=new Date(s.evDay);});
+  var statsDiv = document.createElement('div'); statsDiv.className = 'stats';
+  statsDiv.innerHTML =
+    '<div class="stat-c"><div class="stat-n">'+sched.length+'</div><div class="stat-l">avaliações</div></div>'+
+    '<div class="stat-c"><div class="stat-n">'+totalAulas+'</div><div class="stat-l">aulas de conteúdo</div></div>'+
+    (lastEval?'<div class="stat-c"><div class="stat-n">'+fmt(lastEval)+'</div><div class="stat-l">última avaliação</div></div>':'');
+  content.appendChild(statsDiv);
+
+  // Legenda
+  var legDiv = document.createElement('div'); legDiv.className = 'legend';
+  var legH = '<div class="leg-i"><div class="leg-sw" style="background:rgba(232,147,74,.2);border:.5px solid rgba(232,147,74,.4)"></div>Feriado</div>'+
+             '<div class="leg-i"><div class="leg-sw" style="background:rgba(100,155,220,.06);border:.5px solid rgba(100,155,220,.12)"></div>Aula livre</div>';
+  sched.forEach(function(s){
+    legH += '<div class="leg-i"><div class="leg-sw" style="background:'+s.color+';opacity:.82"></div>'+s.av.label+' (conteúdo)</div>'+
+            '<div class="leg-i"><div class="leg-sw ev" style="background:'+s.color+'"></div>'+s.av.label+' (avaliação)</div>';
+  });
+  legDiv.innerHTML = legH;
+  content.appendChild(legDiv);
+
+  // Calendário
+  var calTitle = document.createElement('div'); calTitle.className = 'sec-title'; calTitle.textContent = '🗓️ Calendário';
+  content.appendChild(calTitle);
+  var calCon = document.createElement('div'); calCon.className = 'cal-container';
+  renderCal(calCon, sem, sched, dows, config.exceptions || []);
+  content.appendChild(calCon);
+
+  // Lista de avaliações
+  var avalTitle = document.createElement('div'); avalTitle.className = 'sec-title'; avalTitle.textContent = '📋 Avaliações';
+  content.appendChild(avalTitle);
+  var avalList = document.createElement('div'); avalList.className = 'aval-list';
+  sched.forEach(function(s,i){
+    var t = TIPOS[s.av.tipo] || {label:s.av.tipo,color:ACOLORS[i%ACOLORS.length]};
+    var first = s.cDays&&s.cDays.length?fmt(new Date(s.cDays[0])):'—';
+    var ev = s.evDay?fmt(new Date(s.evDay)):'—';
+    var item = document.createElement('div'); item.className = 'aval-item';
+    item.innerHTML =
+      '<div class="aval-sw" style="background:'+s.color+'"></div>'+
+      '<div class="aval-info"><h4>'+s.av.label+'</h4><p>'+s.av.aulas+' aulas de conteúdo · início: '+first+'</p></div>'+
+      '<div class="aval-peso">'+s.av.peso+'%</div>'+
+      '<div class="aval-meta">Data: <strong style="color:'+s.color+'">'+ev+'</strong></div>';
+    avalList.appendChild(item);
+    setTimeout(function(el){return function(){el.classList.add('show');};} (item), i*60+200);
+  });
+  content.appendChild(avalList);
+
+  // Google Calendar
+  var gcal = buildGcal(meta, sched);
+  content.appendChild(gcal);
+}
+
+function renderCal(container, sem, sched, dows, exceptions) {
+  if (!SEM[sem]) return;
+  var dayMap = {};
+  sched.forEach(function(s){
+    (s.cDays||[]).forEach(function(cd,i){
+      var d = new Date(cd);
+      dayMap[d.toDateString()] = {type:'cont',color:s.color,lbl:s.av.label.substring(0,4),
+        ttH:'CONTEÚDO',ttT:s.av.label+' — Aula '+(i+1)+'/'+s.av.aulas,ttS:fmtFull(d)};
+    });
+    if(s.evDay){var ev=new Date(s.evDay);dayMap[ev.toDateString()]={type:'eval',color:s.color,lbl:'✦',ttH:'AVALIAÇÃO',ttT:'🎯 '+s.av.label,ttS:fmtFull(ev)};}
+  });
+  var excMap = {};
+  (exceptions||[]).forEach(function(e){var d=new Date(e.date);excMap[d.toDateString()]=e.desc||'Sem aula';});
+
+  var cur = new Date(SEM[sem].s.getFullYear(), SEM[sem].s.getMonth(), 1);
+  var endM = new Date(SEM[sem].e.getFullYear(), SEM[sem].e.getMonth(), 1);
+  var mi = 0;
+  while(cur <= endM){
+    var md = document.createElement('div'); md.className = 'cal-month';
+    md.innerHTML = '<div class="month-lbl">'+MONTHS[cur.getMonth()]+' '+cur.getFullYear()+'</div>';
+    var g = document.createElement('div'); g.className = 'cal-grid';
+    DOW_PT.forEach(function(n){var h=document.createElement('div');h.className='cal-hdr';h.textContent=n;g.appendChild(h);});
+    var fdow = cur.getDay();
+    for(var i=0;i<fdow;i++){var e=document.createElement('div');e.className='cal-day emp';g.appendChild(e);}
+    var dim = new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
+    for(var d=1;d<=dim;d++){
+      var date = new Date(cur.getFullYear(),cur.getMonth(),d);
+      var cell = document.createElement('div'); cell.className='cal-day';
+      var key = date.toDateString();
+      var hol = isHol(date), exc = excMap[key];
+      var inSem = date>=SEM[sem].s && date<=SEM[sem].e;
+      var mp = dayMap[key];
+      var ns = document.createElement('span'); ns.className='dn'; ns.textContent=d;
+      var tt = null;
+      if(mp){
+        cell.className='cal-day '+(mp.type==='eval'?'eval':'cont');
+        cell.style.background=mp.color;
+        if(mp.type==='cont')cell.style.opacity='.82';
+        var lb=document.createElement('span');lb.className='dl';lb.textContent=mp.lbl;
+        cell.appendChild(ns);cell.appendChild(lb);
+        tt={h:mp.ttH,t:mp.ttT,s:mp.ttS,c:mp.color};
+      } else if(hol){
+        cell.className='cal-day hol';
+        var hl=document.createElement('span');hl.className='dl';hl.textContent=hol.l.substring(0,7);
+        cell.appendChild(ns);cell.appendChild(hl);
+        tt={h:'FERIADO',t:hol.l,s:fmtFull(date),c:'#e8934a'};
+      } else if(exc){
+        cell.className='cal-day exc';
+        var el2=document.createElement('span');el2.className='dl';el2.textContent=exc.substring(0,7);
+        cell.appendChild(ns);cell.appendChild(el2);
+        tt={h:'EXCEPCIONAL',t:exc,s:fmtFull(date),c:'#ff5555'};
+      } else if(!inSem){
+        cell.className='cal-day out';cell.appendChild(ns);
+      } else if(date.getDay()===0||date.getDay()===6){
+        cell.className='cal-day wknd';cell.appendChild(ns);
+      } else if(dows.indexOf(date.getDay())>=0){
+        cell.className='cal-day free';
+        var fl=document.createElement('span');fl.className='dl';fl.textContent=DOW_PT[date.getDay()];
+        cell.appendChild(ns);cell.appendChild(fl);
+        tt={h:'AULA LIVRE',t:DOW_PT[date.getDay()]+'-feira',s:fmtFull(date),c:'#6aabf0'};
+      } else {
+        cell.className='cal-day out';cell.appendChild(ns);
+      }
+      if(tt)attachTT(cell,tt);
+      g.appendChild(cell);
+    }
+    md.appendChild(g); container.appendChild(md);
+    setTimeout((function(m){return function(){m.classList.add('show');};})(md), mi*70+40);
+    mi++; cur.setMonth(cur.getMonth()+1);
+  }
+}
+
+// Tooltip
+var _tt=document.getElementById('tt'),_ttTO=null;
+function attachTT(cell,data){
+  cell.addEventListener('mouseenter',function(e){
+    clearTimeout(_ttTO);
+    document.getElementById('tt-hdr').textContent=data.h;
+    document.getElementById('tt-title').innerHTML='<span class="tt-dot" style="background:'+data.c+'"></span>'+data.t;
+    document.getElementById('tt-sub').textContent=data.s;
+    posTT(e);_tt.classList.add('show');
+  });
+  cell.addEventListener('mousemove',posTT);
+  cell.addEventListener('mouseleave',function(){_ttTO=setTimeout(function(){_tt.classList.remove('show');},80);});
+}
+function posTT(e){
+  var tw=_tt.offsetWidth||180,th=_tt.offsetHeight||80;
+  var l=e.clientX+14,t=e.clientY-10;
+  if(l+tw>window.innerWidth-8)l=e.clientX-tw-10;
+  if(t+th>window.innerHeight-8)t=window.innerHeight-th-8;
+  _tt.style.left=l+'px';_tt.style.top=t+'px';
+}
+
+// Google Calendar
+function buildGcal(meta, sched) {
+  var sec = document.createElement('div'); sec.className = 'gcal-sec';
+  sec.innerHTML = '<div class="gcal-title">Adicionar ao Google Calendar</div>'+
+    '<p class="gcal-desc">Adicione as avaliações ao seu calendário. Abre o Google Calendar já preenchido — sem login aqui. Ou baixe o <strong>.ics</strong> para qualquer calendário.</p>'+
+    '<div class="gcal-btns">'+
+      '<button class="btn-gcal" onclick="openAllGcal()">📅 Abrir todas no Google Calendar</button>'+
+      '<button class="btn-ics" onclick="dlICS()">⬇ Baixar .ics</button>'+
+    '</div>'+
+    '<div class="gcal-list" id="gcal-list"></div>';
+
+  // Preencher lista individual após inserir no DOM
+  setTimeout(function(){
+    var list = document.getElementById('gcal-list');
+    if(!list) return;
+    sched.filter(function(s){return s.evDay;}).forEach(function(s){
+      var t = TIPOS[s.av.tipo]||{label:s.av.tipo};
+      var evDate = new Date(s.evDay);
+      var title = s.av.label+' — '+meta.nome+' ('+meta.codigo+')';
+      var desc = 'Disciplina: '+meta.nome+' ('+meta.codigo+')\nTipo: '+t.label+'\nPeso: '+s.av.peso+'%';
+      var ds = fmtGcal(evDate);
+      var nd = new Date(evDate.getTime()); nd.setDate(nd.getDate()+1);
+      var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'+
+        '&text='+encodeURIComponent(title)+'&dates='+ds+'%2F'+fmtGcal(nd)+
+        '&details='+encodeURIComponent(desc)+'&location='+encodeURIComponent('Observatório do Valongo, UFRJ')+'&sf=true&output=xml';
+      var ds2 = evDate.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+      var item = document.createElement('div'); item.className='gcal-item';
+      item.innerHTML='<div class="gcal-dot" style="background:'+s.color+'"></div>'+
+        '<div class="gcal-info"><div class="gcal-name">'+s.av.label+'</div>'+
+        '<div class="gcal-date">'+ds2+' · '+t.label+' · '+s.av.peso+'%</div></div>'+
+        '<a class="btn-gcal-i" href="'+url+'" target="_blank" rel="noopener">📅 Adicionar</a>';
+      list.appendChild(item);
+    });
+  }, 100);
+
+  return sec;
+}
+
+window._schedRef = null;
+window._metaRef = null;
+
+function openAllGcal(){
+  if(!window._schedRef||!window._metaRef) return;
+  window._schedRef.filter(function(s){return s.evDay;}).forEach(function(s,i){
+    var t=TIPOS[s.av.tipo]||{label:s.av.tipo};
+    var ev=new Date(s.evDay);
+    var title=s.av.label+' — '+window._metaRef.nome+' ('+window._metaRef.codigo+')';
+    var desc='Tipo: '+t.label+'\nPeso: '+s.av.peso+'%';
+    var ds=fmtGcal(ev);var nd=new Date(ev.getTime());nd.setDate(nd.getDate()+1);
+    var url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+ds+'%2F'+fmtGcal(nd)+'&details='+encodeURIComponent(desc)+'&location='+encodeURIComponent('Observatório do Valongo, UFRJ')+'&sf=true&output=xml';
+    setTimeout(function(){window.open(url,'_blank');},i*350);
+  });
+}
+
+function dlICS(){
+  if(!window._schedRef||!window._metaRef) return;
+  var m=window._metaRef;
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//OVL Cronogramas//PT',
+    'CALSCALE:GREGORIAN','X-WR-CALNAME:'+m.nome+' ('+m.codigo+') — '+m.semestre,
+    'X-WR-TIMEZONE:America/Sao_Paulo'];
+  var now=new Date();
+  var stamp=fmtGcal(now)+'T'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+'00Z';
+  window._schedRef.forEach(function(s,i){
+    if(!s.evDay)return;
+    var t=TIPOS[s.av.tipo]||{label:s.av.tipo};
+    var ev=new Date(s.evDay);var nd=new Date(ev.getTime());nd.setDate(nd.getDate()+1);
+    var title=s.av.label+' — '+m.nome+' ('+m.codigo+')';
+    lines=lines.concat(['BEGIN:VEVENT','DTSTART;VALUE=DATE:'+fmtGcal(ev),
+      'DTEND;VALUE=DATE:'+fmtGcal(nd),'DTSTAMP:'+stamp,
+      'UID:'+m.codigo+'-'+i+'-'+fmtGcal(ev)+'@ovl.ufrj','SUMMARY:'+title,
+      'LOCATION:Observatório do Valongo\\, UFRJ',
+      'DESCRIPTION:Tipo: '+t.label+'\\\\nPeso: '+s.av.peso+'%',
+      'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Lembrete: '+title,'END:VALARM',
+      'END:VEVENT']);
+  });
+  lines.push('END:VCALENDAR');
+  var blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='cronograma-'+m.codigo+'-'+m.semestre+'.ics';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// Sobrescrever renderPage para salvar refs para gcal
+var _origRenderPage = renderPage;
+renderPage = function(meta, config) {
+  window._metaRef = meta;
+  window._schedRef = config.sched || [];
+  _origRenderPage(meta, config);
+};
+
+init();
+</script>
+</body>
+</html>

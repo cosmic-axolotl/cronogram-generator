@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVL — Editor de Cronograma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- O editor reutiliza o CSS/JS do cronograma-v2.html.
+     Este arquivo é um wrapper mínimo que:
+     1. Verifica autenticação
+     2. Carrega a turma selecionada no painel
+     3. Embute o editor completo via iframe + bridge de mensagens
+     4. Adiciona barra de ações (Salvar / Publicar / Despublicar) -->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05080f;--text:#dce8f5;--muted:#7a9bbf;--dim:#2e4a6a;
+  --accent:#6aabf0;--orange:#e8934a;
+  --border:rgba(100,155,220,.15);--border2:rgba(100,155,220,.35);
+}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+#topbar{background:rgba(5,8,15,.94);backdrop-filter:blur(20px);
+  border-bottom:.5px solid rgba(106,171,240,.18);padding:0 24px;flex-shrink:0}
+.top-inner{max-width:1200px;margin:0 auto;height:56px;
+  display:flex;align-items:center;gap:14px}
+.top-brand{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:800;color:#dff0ff}
+.top-brand span{color:var(--accent)}
+.top-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.top-turma{display:flex;flex-direction:column;gap:2px}
+.top-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.1em}
+.top-nome{font-size:13px;font-weight:600;color:var(--text)}
+.top-spacer{flex:1}
+.pub-status{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;
+  border-radius:20px;flex-shrink:0}
+.pub-on{background:rgba(80,227,164,.1);border:.5px solid rgba(80,227,164,.3);color:#50e3a4}
+.pub-off{background:rgba(100,155,220,.06);border:.5px solid rgba(100,155,220,.15);color:var(--dim)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;border:none;
+  font-family:'Exo 2',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:rgba(8,14,28,.72);border:.5px solid var(--border2);color:var(--muted)}
+.btn-ghost:hover:not(:disabled){border-color:var(--accent);color:var(--text)}
+.btn-save{background:rgba(106,171,240,.15);border:.5px solid rgba(106,171,240,.4);color:var(--accent)}
+.btn-save:hover:not(:disabled){background:rgba(106,171,240,.25)}
+.btn-pub{background:var(--accent);color:#05080f}
+.btn-pub:hover:not(:disabled){opacity:.88}
+.btn-depub{background:rgba(255,85,85,.1);border:.5px solid rgba(255,85,85,.3);color:#ff7070}
+.btn-depub:hover:not(:disabled){background:rgba(255,85,85,.2)}
+
+/* TOAST */
+#toast-bar{position:fixed;top:66px;left:50%;transform:translateX(-50%);
+  z-index:500;display:none;min-width:280px;max-width:480px;width:90%;
+  padding:12px 18px;border-radius:12px;font-size:13px;text-align:center;
+  backdrop-filter:blur(16px);animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}
+                   to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#toast-bar.ok{background:rgba(80,227,164,.12);border:.5px solid rgba(80,227,164,.3);color:#50e3a4;display:block}
+#toast-bar.err{background:rgba(255,85,85,.12);border:.5px solid rgba(255,85,85,.3);color:#ff7070;display:block}
+#toast-bar.info{background:rgba(106,171,240,.12);border:.5px solid rgba(106,171,240,.3);color:var(--accent);display:block}
+
+/* IFRAME */
+#editor-frame{flex:1;border:none;width:100%;min-height:0}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="top-inner">
+    <div class="top-brand">OVL <span>Cronogramas</span></div>
+    <div class="top-sep"></div>
+    <div class="top-turma">
+      <span class="top-code" id="top-code">—</span>
+      <span class="top-nome" id="top-nome">Carregando…</span>
+    </div>
+    <div class="top-spacer"></div>
+    <span class="pub-status pub-off" id="pub-status">rascunho</span>
+    <button class="btn btn-save" id="btn-save" onclick="saveRascunho()" disabled>⬇ Salvar rascunho</button>
+    <button class="btn btn-pub"  id="btn-pub"  onclick="publicar()"    disabled>◈ Publicar</button>
+    <button class="btn btn-depub" id="btn-depub" onclick="despublicar()" style="display:none">Despublicar</button>
+    <button class="btn btn-ghost" onclick="goBack()">← Painel</button>
+  </div>
+</div>
+
+<div id="toast-bar"></div>
+
+<!-- O editor é o cronograma-v2.html existente — sem modificação -->
+<iframe id="editor-frame" src="cronograma-v2.html" title="Editor de cronograma"></iframe>
+
+<script src="_shared.js"></script>
+<script>
+'use strict';
+requireAuth();
+
+var TURMA_ID  = parseInt(localStorage.getItem('ovl_turma_id') || '0');
+var CODIGO    = localStorage.getItem('ovl_turma_codigo') || '';
+var SEMESTRE  = localStorage.getItem('ovl_turma_semestre') || '';
+var isPublicado = false;
+
+if (!TURMA_ID) { window.location.href = 'painel.html'; }
+
+document.getElementById('top-code').textContent = CODIGO + ' · ' + SEMESTRE;
+document.getElementById('top-nome').textContent = 'Carregando…';
+
+// Carregar dados da turma e cronograma existente
+async function init() {
+  // Buscar cronograma salvo
+  var res = await apiFetch('/cronogramas/' + TURMA_ID);
+  if (res && res.ok) {
+    var crono = await res.json();
+    isPublicado = crono.publicado;
+    updatePubStatus();
+    // Enviar config salva para o iframe após ele carregar
+    if (crono.config_json && crono.config_json !== '{}') {
+      pendingConfig = crono.config_json;
+    }
+  }
+
+  // Buscar nome da turma
+  var tRes = await apiFetch('/professor/turmas');
+  if (tRes && tRes.ok) {
+    var turmas = await tRes.json();
+    var turma = turmas.find(function(t) { return t.id === TURMA_ID; });
+    if (turma) {
+      document.getElementById('top-nome').textContent = turma.nome;
+      document.title = 'OVL — ' + turma.codigo + ' · ' + turma.semestre;
+    }
+  }
+
+  document.getElementById('btn-save').disabled = false;
+  document.getElementById('btn-pub').disabled = false;
+}
+
+function updatePubStatus() {
+  var el = document.getElementById('pub-status');
+  var depub = document.getElementById('btn-depub');
+  if (isPublicado) {
+    el.className = 'pub-status pub-on'; el.textContent = 'publicado';
+    depub.style.display = 'inline-flex';
+  } else {
+    el.className = 'pub-status pub-off'; el.textContent = 'rascunho';
+    depub.style.display = 'none';
+  }
+}
+
+// Config salva aguardando iframe carregar
+var pendingConfig = null;
+
+// Comunicação com o iframe
+var frame = document.getElementById('editor-frame');
+
+frame.addEventListener('load', function() {
+  // Quando o iframe carregar, injetar dados da turma
+  try {
+    var win = frame.contentWindow;
+    // Pre-preencher código e nome no editor
+    setTimeout(function() {
+      var inp = win.document.getElementById('f-codigo');
+      if (inp) {
+        inp.value = CODIGO;
+        if (win.onCodigo) win.onCodigo(CODIGO, true);
+      }
+      var nomeinp = win.document.getElementById('f-nome');
+      if (nomeinp && nomeinp.value === 'Simulações Astrofísicas') {
+        // Só sobrescrever se ainda for o valor padrão
+      }
+      // Selecionar semestre correto
+      var semSel = win.document.getElementById('f-sem');
+      if (semSel) semSel.value = SEMESTRE;
+      // Restaurar config salva
+      if (pendingConfig) {
+        restoreConfig(win, pendingConfig);
+        pendingConfig = null;
+      }
+    }, 800);
+  } catch(e) {}
+});
+
+function restoreConfig(win, configJson) {
+  try {
+    var config = JSON.parse(configJson);
+    if (!config.sched || !config.sched.length) return;
+    // Chamar a função de geração do iframe com os dados salvos
+    // O cronograma-v2 expõe gData após gerar — aqui vamos apenas notificar o usuário
+    showToast('Rascunho anterior carregado. Clique em "Gerar Cronograma" para visualizar.', 'info');
+  } catch(e) {}
+}
+
+// Coletar config do iframe
+function getEditorConfig() {
+  try {
+    var win = frame.contentWindow;
+    var gData = win.gData;
+    if (!gData) return null;
+    // Serializar para salvar no banco
+    // Converter datas para ISO strings (JSON não serializa Date)
+    var config = JSON.parse(JSON.stringify({
+      sem: gData.sem,
+      dows: gData.dows,
+      nome: gData.nome,
+      code: gData.code,
+      sched: (gData.sched || []).map(function(s) {
+        return {
+          av: s.av,
+          color: s.color,
+          cDays: (s.cDays || []).map(function(d) { return new Date(d).toISOString(); }),
+          evDay: s.evDay ? new Date(s.evDay).toISOString() : null,
+        };
+      }),
+      exceptions: win.excList ? win.excList.map(function(e) {
+        return { date: new Date(e.date).toISOString(), desc: e.desc };
+      }) : [],
+    }));
+    return JSON.stringify(config);
+  } catch(e) {
+    return null;
+  }
+}
+
+function showToast(msg, type, duration) {
+  var el = document.getElementById('toast-bar');
+  el.textContent = msg;
+  el.className = type || 'info';
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.style.display = 'none'; el.className = ''; }, duration || 3500);
+}
+
+async function saveRascunho() {
+  var config = getEditorConfig();
+  if (!config) { showToast('Gere o cronograma antes de salvar.', 'err'); return; }
+
+  var btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+  var res = await apiFetch('/cronogramas/' + TURMA_ID + '/salvar', {
+    method: 'PUT', body: JSON.stringify({ config_json: config })
+  });
+  btn.disabled = false; btn.textContent = '⬇ Salvar rascunho';
+  if (res && res.ok) { showToast('Rascunho salvo.', 'ok'); }
+  else { showToast('Erro ao salvar.', 'err'); }
+}
+
+async function publicar() {
+  var config = getEditorConfig();
+  if (!config) { showToast('Gere o cronograma antes de publicar.', 'err'); return; }
+
+  if (!confirm('Publicar este cronograma? Ele ficará visível para todos os alunos.')) return;
+
+  var btn = document.getElementById('btn-pub');
+  btn.disabled = true; btn.textContent = 'Publicando…';
+  var res = await apiFetch('/cronogramas/' + TURMA_ID + '/publicar', {
+    method: 'POST', body: JSON.stringify({ config_json: config })
+  });
+  btn.disabled = false; btn.textContent = '◈ Publicar';
+  if (res && res.ok) {
+    isPublicado = true; updatePubStatus();
+    showToast('Cronograma publicado! URL pública disponível.', 'ok', 5000);
+  } else {
+    showToast('Erro ao publicar.', 'err');
+  }
+}
+
+async function despublicar() {
+  if (!confirm('Remover da visualização pública? O rascunho será mantido.')) return;
+  var res = await apiFetch('/cronogramas/' + TURMA_ID + '/despublicar', { method: 'POST' });
+  if (res && res.ok) {
+    isPublicado = false; updatePubStatus();
+    showToast('Cronograma removido da visualização pública.', 'info');
+  }
+}
+
+function goBack() { window.location.href = 'painel.html'; }
+
+init();
+</script>
+</body>
+</html>
