@@ -1,73 +1,49 @@
-import os
-from contextlib import asynccontextmanager
+// ── URL da API ────────────────────────────────────────────────────
+// Trocar pela URL real do Render após o deploy:
+const API_PROD = 'https://ovl-cronogramas.onrender.com';
+const API_DEV  = 'http://localhost:8000';
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+// Auto-detecta: usa prod se estiver no GitHub Pages, dev caso contrário
+const API = (location.hostname === 'cosmic-axolotl.github.io' || location.hostname.endsWith('.github.io'))
+  ? API_PROD
+  : API_DEV;
 
-from database import create_db_and_tables, engine
-from models import Settings
-from routes import auth, cronogramas, professor, public
+// ── Auth helpers ──────────────────────────────────────────────────
+function getToken() { return localStorage.getItem('ovl_token'); }
+function getProf()  { return JSON.parse(localStorage.getItem('ovl_prof') || 'null'); }
 
+function setAuth(token, prof) {
+  localStorage.setItem('ovl_token', token);
+  localStorage.setItem('ovl_prof', JSON.stringify(prof));
+}
 
-# ── lifespan: inicialização do banco ─────────────────────────────
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    _seed_settings()
-    yield
+function clearAuth() {
+  localStorage.removeItem('ovl_token');
+  localStorage.removeItem('ovl_prof');
+}
 
+function requireAuth() {
+  if (!getToken()) { window.location.href = 'index.html'; }
+}
 
-def _seed_settings():
-    """Garante que a config open_registration existe com valor padrão."""
-    with Session(engine) as session:
-        existing = session.exec(
-            select(Settings).where(Settings.key == "open_registration")
-        ).first()
-        if not existing:
-            session.add(Settings(key="open_registration", value="true"))
-            session.commit()
+// ── apiFetch ─────────────────────────────────────────────────────
+// Wrapper de fetch que injeta o token JWT e redireciona em caso de 401
+async function apiFetch(path, opts) {
+  opts = opts || {};
+  var token = getToken();
+  var headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+  if (token) headers['Authorization'] = 'Bearer ' + token;
 
-
-# ── app ───────────────────────────────────────────────────────────
-app = FastAPI(
-    title="OVL Cronogramas API",
-    description="API de cronogramas acadêmicos — Observatório do Valongo · UFRJ",
-    version="1.0.0",
-    lifespan=lifespan,
-)
-
-# CORS — permite o frontend no GitHub Pages e localhost em dev
-ALLOWED_ORIGINS = os.environ.get(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:5500,http://127.0.0.1:5500"
-).split(",")
-
-# Em produção adicionar: https://cosmic-axolotl.github.io
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ── rotas ─────────────────────────────────────────────────────────
-app.include_router(auth.router)
-app.include_router(professor.router)
-app.include_router(cronogramas.router)
-app.include_router(public.router)
-
-
-@app.get("/", tags=["health"])
-def root():
-    return {
-        "status": "ok",
-        "app": "OVL Cronogramas API",
-        "docs": "/docs",
+  try {
+    var res = await fetch(API + path, Object.assign({}, opts, { headers: headers }));
+    if (res.status === 401) {
+      clearAuth();
+      window.location.href = 'index.html';
+      return null;
     }
-
-
-@app.get("/health", tags=["health"])
-def health():
-    return {"status": "ok"}
+    return res;
+  } catch (err) {
+    // "Failed to fetch" → backend inacessível
+    throw err;
+  }
+}
