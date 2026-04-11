@@ -1,6 +1,6 @@
 // ── URL da API ────────────────────────────────────────────────────
 // Trocar pela URL real do Render após o deploy:
-const API_PROD = 'https://ovl-cronogramas.onrender.com';
+const API_PROD = 'https://ovl-cronogram-api.onrender.com;
 const API_DEV  = 'http://localhost:8000';
 
 // Auto-detecta: usa prod se estiver no GitHub Pages, dev caso contrário
