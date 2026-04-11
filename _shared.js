@@ -1,6 +1,6 @@
 // ── URL da API ────────────────────────────────────────────────────
 // Trocar pela URL real do Render após o deploy:
-const API_PROD = 'https://ovl-cronogram-api.onrender.com;
+const API_PROD = 'https://ovl-cronogram-api.onrender.com';
 const API_DEV  = 'http://localhost:8000';
 
 // Auto-detecta: usa prod se estiver no GitHub Pages, dev caso contrário
@@ -23,7 +23,7 @@ function clearAuth() {
 }
 
 function requireAuth() {
-  if (!getToken()) { window.location.href = 'index.html'; }
+  if (!getToken()) { window.location.href = 'login.html'; }
 }
 
 // ── apiFetch ─────────────────────────────────────────────────────
@@ -38,7 +38,7 @@ async function apiFetch(path, opts) {
     var res = await fetch(API + path, Object.assign({}, opts, { headers: headers }));
     if (res.status === 401) {
       clearAuth();
-      window.location.href = 'index.html';
+      window.location.href = 'login.html';
       return null;
     }
     return res;
