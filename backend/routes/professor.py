@@ -70,7 +70,15 @@ def delete_turma(
     current: Professor = Depends(get_current_professor),
     session: Session = Depends(get_session),
 ):
+    from models import Cronograma
+    from sqlmodel import select as _sel
     turma = _get_own_turma(turma_id, current.id, session)
+    # Apagar cronograma associado antes — evita violacao de FK
+    crono = session.exec(
+        _sel(Cronograma).where(Cronograma.turma_id == turma_id)
+    ).first()
+    if crono:
+        session.delete(crono)
     session.delete(turma)
     session.commit()
 
