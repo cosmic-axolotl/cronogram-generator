@@ -27,13 +27,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(5,8,15,.92);
   padding:0 28px;}
 .nav-inner{max-width:960px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .nav-brand{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:800;
-  color:#dff0ff;letter-spacing:-.01em;text-decoration:none}
+  color:#dff0ff;letter-spacing:-.01em}
 .nav-brand span{color:var(--accent)}
 .nav-right{display:flex;align-items:center;gap:10px}
 .prof-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
   background:rgba(8,14,28,.72);border:.5px solid var(--border2);border-radius:20px;padding:5px 12px}
 .btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;
-  border:none;font-family:'Exo 2',sans-serif;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  border:none;font-family:'Exo 2',sans-serif;transition:all .2s}
 .btn-ghost{background:rgba(8,14,28,.72);border:.5px solid var(--border2);color:var(--muted)}
 .btn-ghost:hover{border-color:var(--accent);color:var(--text)}
 .btn-accent{background:var(--accent);color:#05080f}
@@ -123,7 +123,6 @@ h1 span{color:var(--accent)}
 .btn-cancel:hover{border-color:var(--accent);color:var(--text)}
 .msg-modal{font-size:12px;color:#ff7070;margin-top:8px;display:none}
 .msg-modal.show{display:block}
-.field-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:3px}
 
 /* EMPTY */
 .empty{text-align:center;padding:48px 0;color:var(--muted);font-size:14px}
@@ -140,10 +139,10 @@ h1 span{color:var(--accent)}
 
 <nav>
   <div class="nav-inner">
-    <a href="buscar.html" class="nav-brand">OVL <span>Cronogramas</span></a>
+    <div class="nav-brand">OVL <span>Cronogramas</span></div>
     <div class="nav-right">
       <span class="prof-badge" id="prof-badge">—</span>
-      <a href="buscar.html" class="btn-sm btn-ghost">🏠 Início</a>
+      <button class="btn-sm btn-ghost" onclick="window.location.href='buscar.html'">Busca pública</button>
       <button class="btn-sm btn-ghost" onclick="logout()">Sair</button>
     </div>
   </div>
@@ -154,43 +153,12 @@ h1 span{color:var(--accent)}
   <div class="modal">
     <h2 id="modal-title">Nova turma</h2>
     <div class="field">
-      <label>Disciplina</label>
-      <select id="m-disc" onchange="onDiscSelect()">
-        <option value="">— Selecione uma disciplina —</option>
-        <option value="OVL111|Introdução à Astronomia">OVL111 · Introdução à Astronomia</option>
-        <option value="OVL121|Astronomia Esférica">OVL121 · Astronomia Esférica</option>
-        <option value="OVL231|Laboratório de Astronomia">OVL231 · Laboratório de Astronomia</option>
-        <option value="OVL232|Métodos Computacionais da Astronomia">OVL232 · Métodos Computacionais da Astronomia</option>
-        <option value="OVL241|Astrofísica Geral">OVL241 · Astrofísica Geral</option>
-        <option value="OVL351|Técnica Observacional Astronômica">OVL351 · Técnica Observacional Astronômica</option>
-        <option value="OVL352|Sistemas Planetários">OVL352 · Sistemas Planetários</option>
-        <option value="OVL361|Evolução do Pensamento Astronômico">OVL361 · Evolução do Pensamento Astronômico</option>
-        <option value="OVL362|Astroestatística">OVL362 · Astroestatística</option>
-        <option value="OVL363|Astronomia Contemporânea">OVL363 · Astronomia Contemporânea</option>
-        <option value="OVL471|Prática Observacional em Astronomia">OVL471 · Prática Observacional em Astronomia</option>
-        <option value="OVL472|Iniciação à Pesquisa em Astronomia">OVL472 · Iniciação à Pesquisa em Astronomia</option>
-        <option value="OVL481|Astrofísica Estelar">OVL481 · Astrofísica Estelar</option>
-        <option value="OVL482|Astrofísica Extragaláctica">OVL482 · Astrofísica Extragaláctica</option>
-        <option value="OVL491|Cosmologia">OVL491 · Cosmologia</option>
-        <option value="OVL492|Mecânica Celeste">OVL492 · Mecânica Celeste</option>
-        <option value="OVL493|Radioastronomia">OVL493 · Radioastronomia</option>
-        <option value="OVL494|Astrofísica de Altas Energias">OVL494 · Astrofísica de Altas Energias</option>
-        <option value="OVL514|Simulações Astrofísicas">OVL514 · Simulações Astrofísicas</option>
-        <option value="OVL521|Instrumentação Astronômica">OVL521 · Instrumentação Astronômica</option>
-        <option value="OUTRO|">✏ Outra (digitar manualmente)</option>
-      </select>
-      <span class="field-hint" id="disc-hint"></span>
+      <label>Código da disciplina</label>
+      <input type="text" id="m-codigo" placeholder="ex: OVL514" style="text-transform:uppercase">
     </div>
-    <!-- campos manuais, aparecem só se "Outra" for selecionado -->
-    <div id="manual-fields" style="display:none">
-      <div class="field">
-        <label>Código</label>
-        <input type="text" id="m-codigo" placeholder="ex: OVL999" style="text-transform:uppercase">
-      </div>
-      <div class="field">
-        <label>Nome da disciplina</label>
-        <input type="text" id="m-nome" placeholder="ex: Astrofísica Computacional">
-      </div>
+    <div class="field">
+      <label>Nome da disciplina</label>
+      <input type="text" id="m-nome" placeholder="ex: Simulações Astrofísicas">
     </div>
     <div class="field">
       <label>Semestre</label>
@@ -266,41 +234,6 @@ function logout() { clearAuth(); window.location.href = 'index.html'; }
 
 var COLORS = ['#6aabf0','#a78bfa','#f0b070','#50e3a4','#ff79c6','#ff5555','#ffd32a'];
 
-// ── DROPDOWN DISCIPLINA ───────────────────────────────────────────
-function onDiscSelect() {
-  var sel = document.getElementById('m-disc');
-  var val = sel.value;
-  var hint = document.getElementById('disc-hint');
-  var manual = document.getElementById('manual-fields');
-
-  if (!val) { hint.textContent = ''; manual.style.display = 'none'; return; }
-
-  if (val === 'OUTRO|') {
-    manual.style.display = 'block';
-    hint.textContent = '';
-    document.getElementById('m-codigo').value = '';
-    document.getElementById('m-nome').value = '';
-    return;
-  }
-
-  manual.style.display = 'none';
-  var parts = val.split('|');
-  hint.textContent = '✓ ' + parts[0] + ' · ' + parts[1];
-}
-
-function getModalCodigoNome() {
-  var sel = document.getElementById('m-disc').value;
-  if (!sel) return null;
-  if (sel === 'OUTRO|') {
-    var codigo = document.getElementById('m-codigo').value.trim().toUpperCase();
-    var nome = document.getElementById('m-nome').value.trim();
-    return { codigo: codigo, nome: nome };
-  }
-  var parts = sel.split('|');
-  return { codigo: parts[0], nome: parts[1] };
-}
-
-// ── TURMAS ────────────────────────────────────────────────────────
 async function loadTurmas() {
   var sem = document.getElementById('filter-sem').value;
   var res = await apiFetch('/professor/turmas');
@@ -320,6 +253,7 @@ function renderTurmas() {
   grid.innerHTML = '';
   turmas.forEach(function(t, i) {
     var color = COLORS[i % COLORS.length];
+    var isPub = t.publicado; // virá do cronograma associado — por ora check por request separado
     var card = document.createElement('div');
     card.className = 'turma-card';
     card.style.borderLeft = '3px solid ' + color;
@@ -329,10 +263,31 @@ function renderTurmas() {
       '<div class="tc-nome">'+t.nome+'</div>'+
       '<div class="tc-sem">'+t.semestre+'</div>'+
       '<div class="tc-actions">'+
-        '<button class="tc-btn tc-btn-edit" onclick="goEditor('+t.id+',\''+encodeURIComponent(t.codigo)+'\',\''+encodeURIComponent(t.semestre)+'\')">Editar cronograma</button>'+
-        '<button class="tc-btn tc-btn-del" onclick="deleteTurma('+t.id+',\''+t.nome+'\')">Remover</button>'+
+        '<button class="tc-btn tc-btn-edit"'+
+          ' data-id="'+t.id+'"'+
+          ' data-codigo="'+encodeURIComponent(t.codigo)+'"'+
+          ' data-sem="'+encodeURIComponent(t.semestre)+'"'+
+          '>Editar cronograma</button>'+
+        '<button class="tc-btn tc-btn-del"'+
+          ' data-id="'+t.id+'"'+
+          ' data-nome="'+t.nome.replace(/"/g,'&quot;')+'"'+
+          '>Remover</button>'+
       '</div>';
+    // Adicionar listeners via JS (sem onclick inline) — evita quebra com apóstrofos no nome
+    var btnEdit = card.querySelector('.tc-btn-edit');
+    btnEdit.addEventListener('click', function() {
+      goEditor(
+        parseInt(this.dataset.id),
+        this.dataset.codigo,
+        this.dataset.sem
+      );
+    });
+    var btnDel = card.querySelector('.tc-btn-del');
+    btnDel.addEventListener('click', function() {
+      deleteTurma(parseInt(this.dataset.id), this.dataset.nome);
+    });
     grid.appendChild(card);
+    // Verificar se tem cronograma publicado
     checkPub(t.id);
   });
   renderAddCard();
@@ -365,36 +320,34 @@ function goEditor(id, codigo, semestre) {
   window.location.href = 'editor.html';
 }
 
-// ── MODAL ─────────────────────────────────────────────────────────
+// Modal nova/editar turma
 function openModal(turmaId) {
   editingId = turmaId || null;
   document.getElementById('modal-title').textContent = editingId ? 'Editar turma' : 'Nova turma';
-  document.getElementById('m-disc').value = '';
-  document.getElementById('manual-fields').style.display = 'none';
-  document.getElementById('disc-hint').textContent = '';
+  if (!editingId) {
+    document.getElementById('m-codigo').value = '';
+    document.getElementById('m-nome').value = '';
+  }
   document.getElementById('msg-modal').className = 'msg-modal';
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(function() { document.getElementById('m-disc').focus(); }, 100);
+  setTimeout(function() { document.getElementById('m-codigo').focus(); }, 100);
 }
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 
 async function saveTurma() {
-  var cn = getModalCodigoNome();
-  var msgEl = document.getElementById('msg-modal');
+  var codigo = document.getElementById('m-codigo').value.trim().toUpperCase();
+  var nome   = document.getElementById('m-nome').value.trim();
+  var sem    = document.getElementById('m-sem').value;
+  var msgEl  = document.getElementById('msg-modal');
 
-  if (!cn || !cn.codigo || !cn.nome) {
-    msgEl.textContent = 'Selecione uma disciplina ou preencha código e nome.';
-    msgEl.className = 'msg-modal show';
-    return;
-  }
+  if (!codigo || !nome) { msgEl.textContent = 'Preencha código e nome.'; msgEl.className = 'msg-modal show'; return; }
 
-  var sem = document.getElementById('m-sem').value;
   var btn = document.getElementById('btn-modal-ok');
   btn.disabled = true; btn.textContent = 'Salvando...';
 
   var path   = editingId ? '/professor/turmas/' + editingId : '/professor/turmas';
   var method = editingId ? 'PUT' : 'POST';
-  var res = await apiFetch(path, { method: method, body: JSON.stringify({ codigo: cn.codigo, nome: cn.nome, semestre: sem }) });
+  var res = await apiFetch(path, { method: method, body: JSON.stringify({ codigo: codigo, nome: nome, semestre: sem }) });
   var data = await res.json();
 
   btn.disabled = false; btn.textContent = 'Salvar';
