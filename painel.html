@@ -142,7 +142,7 @@ h1 span{color:var(--accent)}
     <div class="nav-brand">OVL <span>Cronogramas</span></div>
     <div class="nav-right">
       <span class="prof-badge" id="prof-badge">—</span>
-      <button class="btn-sm btn-ghost" onclick="window.location.href=window.location.href.replace('painel.html','index.html')">Busca pública</button>
+      <button class="btn-sm btn-ghost" onclick="window.location.href=window.location.href.replace('painel.html','index.html')">Início</button>
       <button class="btn-sm btn-ghost" onclick="logout()">Sair</button>
     </div>
   </div>
@@ -230,7 +230,7 @@ var editingId = null;
 var prof = getProf();
 if (prof) document.getElementById('prof-badge').textContent = prof.name;
 
-function logout() { clearAuth(); window.location.href = 'index.html'; }
+function logout() { clearAuth(); window.location.href = 'login.html'; }
 
 var COLORS = ['#6aabf0','#a78bfa','#f0b070','#50e3a4','#ff79c6','#ff5555','#ffd32a'];
 
