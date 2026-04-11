@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OVL Cronogramas — Observatório do Valongo · UFRJ</title>
+<title>OVL Cronogramas — Buscar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -19,57 +19,18 @@ body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-h
 .s{position:absolute;border-radius:50%;background:#fff;animation:tw var(--d,3s) var(--dl,0s) infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:var(--mn,.1)}50%{opacity:var(--mx,.8)}}
 
-/* NAV */
 nav{position:sticky;top:0;z-index:100;background:rgba(5,8,15,.92);
   backdrop-filter:blur(20px);border-bottom:.5px solid rgba(106,171,240,.18);padding:0 28px}
-.nav-inner{max-width:900px;margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-inner{max-width:860px;margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .nav-brand{font-family:'Urbanist',sans-serif;font-size:14px;font-weight:800;color:#dff0ff}
 .nav-brand span{color:var(--accent)}
-.nav-right{display:flex;align-items:center;gap:8px}
-.btn-sm{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;
+.btn-sm{padding:6px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;
   border:.5px solid var(--border2);color:var(--muted);background:rgba(8,14,28,.72);
-  font-family:'Exo 2',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .2s}
+  font-family:'Exo 2',sans-serif;text-decoration:none;display:inline-flex;align-items:center;transition:all .2s}
 .btn-sm:hover{border-color:var(--accent);color:var(--text)}
-.btn-accent{background:var(--accent);color:#05080f;border-color:var(--accent)}
-.btn-accent:hover{opacity:.88;color:#05080f}
-.prof-badge{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
-  background:rgba(8,14,28,.72);border:.5px solid var(--border2);border-radius:20px;padding:4px 11px}
 
-/* MODAL LOGIN */
-#login-overlay{display:none;position:fixed;inset:0;z-index:400;
-  background:rgba(2,4,14,.82);backdrop-filter:blur(8px);
-  align-items:flex-start;justify-content:flex-end;padding:60px 28px 0}
-#login-overlay.open{display:flex}
-.login-card{background:rgba(8,14,28,.97);border:.5px solid var(--border2);border-radius:18px;
-  padding:28px 32px;width:100%;max-width:360px;
-  animation:mIn .25s cubic-bezier(.34,1.56,.64,1)}
-@keyframes mIn{from{transform:translateY(-12px) scale(.97);opacity:0}to{transform:none;opacity:1}}
-.login-card h2{font-family:'Urbanist',sans-serif;font-size:16px;font-weight:800;
-  color:#dff0ff;margin-bottom:4px}
-.login-card .inst{font-size:11px;color:var(--muted);margin-bottom:20px;
-  font-family:'JetBrains Mono',monospace}
-.tabs{display:flex;gap:4px;background:rgba(8,14,28,.6);border-radius:8px;padding:3px;margin-bottom:18px}
-.tab{flex:1;padding:6px;border-radius:6px;border:none;font-family:'Exo 2',sans-serif;
-  font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s}
-.tab.active{background:rgba(106,171,240,.15);color:var(--accent)}
-.field{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
-.field label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.07em}
-.field input{background:rgba(8,14,28,.9);border:.5px solid var(--border2);color:var(--text);
-  border-radius:7px;padding:9px 12px;font-family:'Exo 2',sans-serif;font-size:13px;
-  outline:none;transition:border-color .2s,box-shadow .2s}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,171,240,.1)}
-.btn-login{width:100%;padding:10px;border-radius:7px;border:none;
-  font-family:'Exo 2',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
-  background:var(--accent);color:#05080f;transition:opacity .2s;margin-top:4px}
-.btn-login:hover{opacity:.88}
-.btn-login:disabled{opacity:.4;cursor:not-allowed}
-.msg{padding:8px 12px;border-radius:7px;font-size:12px;text-align:center;margin-top:10px;display:none}
-.msg.err{background:rgba(255,85,85,.1);border:.5px solid rgba(255,85,85,.3);color:#ff7070;display:block}
-.msg.ok{background:rgba(80,227,164,.1);border:.5px solid rgba(80,227,164,.3);color:#50e3a4;display:block}
+.wrapper{position:relative;z-index:2;max-width:860px;margin:0 auto;padding:48px 28px 80px}
 
-/* BUSCA */
-.wrapper{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:48px 28px 80px}
 header{text-align:center;margin-bottom:40px}
 .hdr-badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;
   font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;
@@ -79,6 +40,8 @@ h1{font-family:'Urbanist',sans-serif;font-size:clamp(22px,4vw,36px);font-weight:
   color:#dff0ff;letter-spacing:-.02em;margin-bottom:8px}
 h1 span{color:var(--accent)}
 .sub{font-size:14px;color:var(--muted)}
+
+/* SEARCH BOX */
 .search-box{display:flex;gap:10px;margin-bottom:10px}
 .search-input{flex:1;background:rgba(8,14,28,.88);border:.5px solid var(--border2);
   color:var(--text);border-radius:10px;padding:13px 18px;font-family:'Exo 2',sans-serif;
@@ -91,28 +54,37 @@ h1 span{color:var(--accent)}
 .search-btn:hover{opacity:.88}
 .search-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
   margin-bottom:28px;text-align:center}
+
+/* RESULTS */
 .results-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
   margin-bottom:14px;min-height:18px}
 .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+
 .res-card{background:var(--panel);border:.5px solid var(--border);border-radius:14px;
   padding:18px 20px;backdrop-filter:blur(12px);cursor:pointer;
-  transition:border-color .2s,transform .15s;text-decoration:none;display:block;position:relative}
+  transition:border-color .2s,transform .15s;text-decoration:none;display:block;
+  position:relative}
 .res-card:hover{border-color:var(--border2);transform:translateY(-2px)}
 .rc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .rc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .rc-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.08em}
 .rc-sem{font-size:11px;color:var(--dim);margin-left:auto;font-family:'JetBrains Mono',monospace}
-.rc-nome{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:700;color:#dff0ff;margin-bottom:4px}
+.rc-nome{font-family:'Urbanist',sans-serif;font-size:15px;font-weight:700;
+  color:#dff0ff;margin-bottom:4px}
 .rc-prof{font-size:12px;color:var(--muted);margin-bottom:8px}
 .rc-updated{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)}
-.rc-arrow{position:absolute;right:16px;bottom:18px;font-size:18px;color:var(--dim);transition:color .2s,transform .15s}
+.rc-arrow{position:absolute;right:16px;bottom:18px;font-size:18px;color:var(--dim);
+  transition:color .2s,transform .15s}
 .res-card:hover .rc-arrow{color:var(--accent);transform:translateX(3px)}
+
+/* EMPTY / LOADING */
 .state-msg{text-align:center;padding:56px 0;color:var(--muted)}
 .state-msg .icon{font-size:36px;margin-bottom:14px}
 .state-msg p{font-size:13px;color:var(--dim);margin-top:6px}
 .loading-dots::after{content:'...';animation:dots 1.2s steps(3,end) infinite}
 @keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
-footer{position:relative;z-index:2;text-align:center;padding:2rem;
+
+footer{position:relative;z-index:2;text-align:center;padding:2rem 2rem;
   font-size:11px;color:var(--dim);font-family:'Exo 2',sans-serif;letter-spacing:.04em}
 </style>
 </head>
@@ -120,63 +92,19 @@ footer{position:relative;z-index:2;text-align:center;padding:2rem;
 
 <div id="stars"></div>
 
-<!-- MODAL LOGIN -->
-<div id="login-overlay" onclick="if(event.target===this)closeLogin()">
-  <div class="login-card">
-    <h2>Área do Professor</h2>
-    <div class="inst">Observatório do Valongo · UFRJ</div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('login')">Entrar</button>
-      <button class="tab" onclick="switchTab('register')">Criar conta</button>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="tab-login">
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="l-email" placeholder="seu@email.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Senha</label>
-        <input type="password" id="l-senha" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <button class="btn-login" id="btn-login" onclick="doLogin()">Entrar</button>
-      <div class="msg" id="msg-login"></div>
-    </div>
-
-    <!-- REGISTRO -->
-    <div id="tab-register" style="display:none">
-      <div class="field">
-        <label>Nome completo</label>
-        <input type="text" id="r-nome" placeholder="Prof. Nome Sobrenome">
-      </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="r-email" placeholder="seu@email.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Senha (mín. 6 caracteres)</label>
-        <input type="password" id="r-senha" placeholder="••••••••" autocomplete="new-password">
-      </div>
-      <button class="btn-login" id="btn-reg" onclick="doRegister()">Criar conta</button>
-      <div class="msg" id="msg-reg"></div>
-    </div>
-  </div>
-</div>
-
 <nav>
   <div class="nav-inner">
     <div class="nav-brand">OVL <span>Cronogramas</span></div>
-    <div class="nav-right" id="nav-right">
-      <!-- preenchido pelo JS dependendo do estado de login -->
+    <div style="display:flex;gap:8px">
+      <a href="login.html" class="btn-sm">Área do professor</a>
     </div>
   </div>
 </nav>
 
 <div class="wrapper">
   <header>
-    <div class="hdr-badge">Observatório do Valongo · UFRJ</div>
-    <h1>Cronogramas <span>Acadêmicos</span></h1>
+    <div class="hdr-badge">Busca pública · sem login</div>
+    <h1>Buscar <span>Cronogramas</span></h1>
     <p class="sub">Encontre o cronograma da sua disciplina pelo código ou nome do professor</p>
   </header>
 
@@ -190,7 +118,8 @@ footer{position:relative;z-index:2;text-align:center;padding:2rem;
   <div class="results-grid" id="results-grid">
     <div class="state-msg">
       <div class="icon">🔭</div>
-      <div>Carregando cronogramas...</div>
+      <div>Digite algo para buscar</div>
+      <p>ou deixe em branco para ver todos os cronogramas publicados</p>
     </div>
   </div>
 </div>
@@ -219,108 +148,7 @@ var lastQuery = null;
   }
 })();
 
-// ── NAV STATE ─────────────────────────────────────────────────────
-function renderNav() {
-  var nav = document.getElementById('nav-right');
-  var prof = getProf();
-  if (getToken() && prof) {
-    nav.innerHTML =
-      '<span class="prof-badge">'+prof.name+'</span>'+
-      '<a href="painel.html" class="btn-sm btn-accent">Meu painel</a>'+
-      '<button class="btn-sm" onclick="doLogout()">Sair</button>';
-  } else {
-    nav.innerHTML =
-      '<button class="btn-sm btn-accent" onclick="openLogin()">Área do professor</button>';
-  }
-}
-
-function doLogout() { clearAuth(); renderNav(); }
-
-// ── LOGIN MODAL ────────────────────────────────────────────────────
-function openLogin() {
-  document.getElementById('login-overlay').classList.add('open');
-  setTimeout(function() { document.getElementById('l-email').focus(); }, 100);
-}
-function closeLogin() {
-  document.getElementById('login-overlay').classList.remove('open');
-}
-
-function switchTab(tab) {
-  var isLogin = tab === 'login';
-  document.getElementById('tab-login').style.display    = isLogin ? 'block' : 'none';
-  document.getElementById('tab-register').style.display = isLogin ? 'none'  : 'block';
-  document.querySelectorAll('.tab').forEach(function(b, i) {
-    b.classList.toggle('active', isLogin ? i === 0 : i === 1);
-  });
-}
-
-function showMsg(id, text, type) {
-  var el = document.getElementById(id);
-  el.textContent = text;
-  el.className = 'msg ' + type;
-}
-
-async function doLogin() {
-  var email = document.getElementById('l-email').value.trim();
-  var senha = document.getElementById('l-senha').value;
-  if (!email || !senha) { showMsg('msg-login', 'Preencha e-mail e senha.', 'err'); return; }
-
-  var btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.textContent = 'Entrando...';
-
-  var body = new URLSearchParams({ username: email, password: senha });
-  var res = await fetch(API + '/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-  var data = await res.json();
-
-  btn.disabled = false; btn.textContent = 'Entrar';
-
-  if (!res.ok) { showMsg('msg-login', data.detail || 'Erro ao entrar.', 'err'); return; }
-
-  setAuth(data.access_token, data.professor);
-  window.location.href = 'painel.html';
-}
-
-async function doRegister() {
-  var nome  = document.getElementById('r-nome').value.trim();
-  var email = document.getElementById('r-email').value.trim();
-  var senha = document.getElementById('r-senha').value;
-
-  if (!nome || !email || !senha) { showMsg('msg-reg', 'Preencha todos os campos.', 'err'); return; }
-  if (senha.length < 6) { showMsg('msg-reg', 'Senha deve ter ao menos 6 caracteres.', 'err'); return; }
-
-  var btn = document.getElementById('btn-reg');
-  btn.disabled = true; btn.textContent = 'Criando conta...';
-
-  var res = await apiFetch('/auth/register', {
-    method: 'POST',
-    body: JSON.stringify({ name: nome, email: email, password: senha })
-  });
-  var data = await res.json();
-
-  btn.disabled = false; btn.textContent = 'Criar conta';
-
-  if (!res.ok) { showMsg('msg-reg', data.detail || 'Erro ao criar conta.', 'err'); return; }
-
-  showMsg('msg-reg', 'Conta criada! Entrando...', 'ok');
-
-  var loginBody = new URLSearchParams({ username: email, password: senha });
-  var loginRes = await fetch(API + '/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: loginBody.toString()
-  });
-  var loginData = await loginRes.json();
-  if (loginRes.ok) {
-    setAuth(loginData.access_token, loginData.professor);
-    window.location.href = 'painel.html';
-  }
-}
-
-// ── BUSCA ─────────────────────────────────────────────────────────
+// Busca com debounce 400ms enquanto digita
 function onSearchInput() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(doSearch, 400);
@@ -386,18 +214,13 @@ function fmtDate(iso) {
   return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
-// ESC fecha modal
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeLogin();
-  if (e.key === 'Enter' && document.getElementById('login-overlay').classList.contains('open')) {
-    var isLogin = document.getElementById('tab-login').style.display !== 'none';
-    if (isLogin) doLogin(); else doRegister();
-  }
-});
-
-// Init
-renderNav();
+// Buscar todos ao abrir
 doSearch();
+
+// Enter para buscar
+document.getElementById('q').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { clearTimeout(searchTimer); doSearch(); }
+});
 </script>
 </body>
 </html>
