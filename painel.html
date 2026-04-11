@@ -256,6 +256,7 @@ function renderTurmas() {
     var isPub = t.publicado; // virá do cronograma associado — por ora check por request separado
     var card = document.createElement('div');
     card.className = 'turma-card';
+    card.dataset.turmaId = t.id;
     card.style.borderLeft = '3px solid ' + color;
     card.innerHTML =
       '<div class="tc-status tc-draft" id="pub-'+t.id+'">rascunho</div>'+
@@ -359,9 +360,27 @@ async function saveTurma() {
 }
 
 async function deleteTurma(id, nome) {
-  if (!confirm('Remover a turma "' + nome + '"? O cronograma salvo será perdido.')) return;
-  var res = await apiFetch('/professor/turmas/' + id, { method: 'DELETE' });
-  if (res && res.ok) loadTurmas();
+  if (!confirm('Remover a turma "' + nome + '"?\nO cronograma salvo sera perdido.')) return;
+
+  // Feedback visual — marca o card enquanto espera
+  var delBtn = document.querySelector('.tc-btn-del[data-id="' + id + '"]');
+  if (delBtn) { delBtn.disabled = true; delBtn.textContent = '...'; }
+
+  try {
+    var res = await apiFetch('/professor/turmas/' + id, { method: 'DELETE' });
+    if (!res) return; // apiFetch redirecionou para login (401)
+    if (res.ok || res.status === 204) {
+      loadTurmas();
+    } else {
+      var body = {};
+      try { body = await res.json(); } catch(e2) {}
+      alert('Erro ao remover: ' + (body.detail || ('status ' + res.status)));
+      if (delBtn) { delBtn.disabled = false; delBtn.textContent = 'Remover'; }
+    }
+  } catch(err) {
+    alert('Erro de rede: ' + err.message);
+    if (delBtn) { delBtn.disabled = false; delBtn.textContent = 'Remover'; }
+  }
 }
 
 document.addEventListener('keydown', function(e) {
