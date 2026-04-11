@@ -1,9 +1,14 @@
-// Configurações compartilhadas entre todas as páginas
-const API = 'https://ovl-cronogram-api.onrender.com';
+// ── URL da API ────────────────────────────────────────────────────
+// Trocar pela URL real do Render após o deploy:
+const API_PROD = 'https://ovl-cronogramas.onrender.com';
+const API_DEV  = 'http://localhost:8000';
 
-// Em dev local, descomentar:
-// const API = 'http://localhost:8000';
+// Auto-detecta: usa prod se estiver no GitHub Pages, dev caso contrário
+const API = (location.hostname === 'cosmic-axolotl.github.io' || location.hostname.endsWith('.github.io'))
+  ? API_PROD
+  : API_DEV;
 
+// ── Auth helpers ──────────────────────────────────────────────────
 function getToken() { return localStorage.getItem('ovl_token'); }
 function getProf()  { return JSON.parse(localStorage.getItem('ovl_prof') || 'null'); }
 
@@ -21,11 +26,24 @@ function requireAuth() {
   if (!getToken()) { window.location.href = 'index.html'; }
 }
 
-async function apiFetch(path, opts = {}) {
-  const token = getToken();
-  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+// ── apiFetch ─────────────────────────────────────────────────────
+// Wrapper de fetch que injeta o token JWT e redireciona em caso de 401
+async function apiFetch(path, opts) {
+  opts = opts || {};
+  var token = getToken();
+  var headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
   if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(API + path, { ...opts, headers });
-  if (res.status === 401) { clearAuth(); window.location.href = 'index.html'; return; }
-  return res;
+
+  try {
+    var res = await fetch(API + path, Object.assign({}, opts, { headers: headers }));
+    if (res.status === 401) {
+      clearAuth();
+      window.location.href = 'index.html';
+      return null;
+    }
+    return res;
+  } catch (err) {
+    // "Failed to fetch" → backend inacessível
+    throw err;
+  }
 }
